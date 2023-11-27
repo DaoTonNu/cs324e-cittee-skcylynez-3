@@ -6,7 +6,7 @@ ArrayList<SpawnedBuilding> spawnedBuilds;
 ArrayList<UserBuilding> userBuilds;
 
 //Figure out the best structure to hold the grid in? But for now:
-int[] cityGrid;
+int[][] cityGrid;
 //consider an arraylist?
 //maybe we can hold a lot more info in the grid itself for save purposes?
 
@@ -16,6 +16,28 @@ float userMoney;
 //int population;
 
 void setup() {
+  size(1100, 800);//Feel free to change this as needed, LET'S TRY TO KEEP EVERYTHING IN TERMS OF WIDTH AND HEIGHT pls :)
+  background(color(51, 63, 72 )); //The color.
+  
+  stroke(255);
+  strokeWeight(1);
+  
+  int widthDivisions = 25;
+  int heightDivisions = 25;
+  cityGrid = new int[width/widthDivisions][height/heightDivisions];
+  for(int i = 0; i < cityGrid.length; i++){
+    for(int j = 0; j < cityGrid[0].length; j++){
+      cityGrid[i][j] = 0;
+      println(cityGrid[i][j], i, j);
+    }
+  }
+  for(int i = 0; i < cityGrid.length; i++){
+    line(i * widthDivisions, 0, i * widthDivisions, height);
+  }
+  for(int j = 0; j < cityGrid[0].length; j++){
+    line(0, j * heightDivisions, width, j * heightDivisions);
+  }
+  
 }
 
 void draw() {
@@ -30,6 +52,7 @@ void draw() {
 //Refer to Project Plan for guidelines on what needs to be saved.
 void saveGame() {
 }
+
 void loadGame() {
 }
 //Funcs dealing with sound
