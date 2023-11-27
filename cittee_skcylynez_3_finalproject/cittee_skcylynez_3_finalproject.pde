@@ -19,6 +19,7 @@ float userMoney;
 //int population;
 
 PImage[] building_images;//Use the same building ID's as the City class
+PVector[] building_sizes;
 
 City theCity;
 
@@ -40,7 +41,7 @@ void setup() {
   
   buildingSelected = 2;
   
-  theCity = new City(cellSizeX, cellSizeY);
+  theCity = new City(cellSizeX, cellSizeY, building_images, building_sizes);
 }
 
 void draw() {
@@ -106,25 +107,25 @@ void initializeAssets() {
   building_images[2] = loadImage("Road.png");
   building_images[3] = loadImage("House.png");
   building_images[4] = loadImage("PostOffice.png");
+  
+  building_sizes = new PVector[10];
+  for(int i = 1; i<building_sizes.length; i++){
+    building_sizes[i] = new PVector();
+  }
+  building_sizes[2].x = 1;
+  building_sizes[2].y = 1;
+  building_sizes[3].x = 2;
+  building_sizes[3].y = 2;
+  building_sizes[4].x = 3;
+  building_sizes[4].y = 2;
 }
 
 void updateMouse(){
     mouseCell.x = round(mouseX / cellSizeX);
-    mousePos.x = mouseCell.x  * cellSizeX;
-    if(mousePos.x > width - cellSizeX){
-      mousePos.x = width - cellSizeX;
-    }
-    else if(mouseCell.x < 0){
-      mouseCell.x = 0;
-      mousePos.x = 0;
-    }
     mouseCell.y = round(mouseY / cellSizeY);
+    mouseCell.x = constrain(mouseCell.x, 0, (width / cellSizeX)-1);
+    mouseCell.y = constrain(mouseCell.y, 0, (height / cellSizeY)-1);
+    mousePos.x = mouseCell.x  * cellSizeX;
     mousePos.y = mouseCell.y * cellSizeY;
-    if(mousePos.y > height - cellSizeY){
-      mousePos.y = height - cellSizeY;
-    }
-    else if(mouseCell.y < 0){
-      mouseCell.y = 0;
-      mousePos.y = 0;
-    }
+    
 }

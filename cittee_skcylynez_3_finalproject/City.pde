@@ -1,7 +1,6 @@
 class City{
   //ArrayList<Building> allBuildings; //Might be unnecessary//Moved over from main file
-  ArrayList<SpawnedBuilding> spawnedBuilds;//Moved over from main file
-  ArrayList<UserBuilding> userBuilds;//Moved over from main file
+  ArrayList<Building> buildings;//Moved over from main file
   //Figure out the best structure to hold the grid in? But for now:
   int cellSizeX;
   int cellSizeY;
@@ -15,6 +14,9 @@ class City{
   //6 is the "nominal" coordinates of a stadium
   //7 is -----(continue as we add in more buildings)----------
   int buildingSelected;//This will line up with the above as well
+  
+  PImage[] building_images;
+  PVector[] building_sizes;
   
   //What do I mean by "nominal coordinates?
   //Here's an example: A house takes up cells 22, 23, 32, and 33. We want to make it easy to have one primary coordinate location (22 here) per building object
@@ -30,27 +32,31 @@ class City{
   //  |  41  |  42  |  43  |  44  |
   //  |------|------|------|------|
   
-  City(int cellSizeX, int cellSizeY){
+  City(int cellSizeX, int cellSizeY, PImage[] building_images, PVector[] building_sizes){
     this.cellSizeX = cellSizeX;
     this.cellSizeY = cellSizeY;
+    this.building_images = building_images;
+    this.building_sizes = building_sizes;
     cityGrid = new int[width/cellSizeX][height/cellSizeY];
     for(int i = 0; i < cityGrid.length; i++){
       for(int j = 0; j < cityGrid[0].length; j++){
         cityGrid[i][j] = 0;
       }
     }
-    spawnedBuilds = new ArrayList<SpawnedBuilding>(1);
-    userBuilds    = new ArrayList<UserBuilding>(1);
+    buildings = new ArrayList<Building>(1);
   }
-  City(int cellSizeX, int cellSizeY, int[][] Saved_City_Grid){
+  City(int cellSizeX, int cellSizeY, PImage[] building_images, PVector[] building_sizes, int[][] Saved_City_Grid){
     this.cellSizeX = cellSizeX;
     this.cellSizeY = cellSizeY;
+    this.building_images = building_images;
+    this.building_sizes = building_sizes;
     cityGrid = Saved_City_Grid;
-    spawnedBuilds = new ArrayList<SpawnedBuilding>(1);
-    userBuilds    = new ArrayList<UserBuilding>(1);
+    buildings = new ArrayList<Building>(1);
   }
   void displayBuildings(){
-    //userBuilds.display();
+    for(Building A_building :buildings){
+      A_building.display();
+    }
   }
   void displayGridLines(){
     for(int i = 0; i < cityGrid.length; i++){
@@ -70,7 +76,8 @@ class City{
   }
   void placeUserBuilding(int cellX, int cellY, int buildingType){
     cityGrid[cellX][cellY] = buildingType;
-    //UserBuilding theNewBuilding = UserBuilding(cellX, cellY, buildingType);
+    Building theNewBuilding = new Building(cellX * cellSizeX, cellY * cellSizeY, buildingType, building_images, building_sizes);
+    buildings.add(theNewBuilding);
     //userBuilds.add(theNewBuilding);
   }
   void placeSpawnedBuilding(){
