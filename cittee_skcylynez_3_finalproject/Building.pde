@@ -1,24 +1,35 @@
 //Dao, David
 class Building {
   //Fields:
-  //NOTE: This will depend on how we want to define these buildings:
-  //PVector position; PVector size; <- an origin and then width and height
-  //OR
-  PVector[] buildCells; //<- Lists all grid spaces occupied
-  //^note we may change this to an arrayList
-  //Dao: I am personally leaning towards the latter (buildCells).
+  PVector position; PVector size; int type;
+  PVector[] building_sizes;
+  PImage[] building_images;
 
   //Constructor
   //TODO: add args
-  Building() {
+  Building(int cellX, int cellY, int buildingType, PImage[] building_images, PVector[] building_sizes) {
+    position = new PVector();
+    size = new PVector();
+    position.x = cellX;
+    position.y = cellY;
+    this.building_images = building_images;
+    this.building_sizes = building_sizes;
+    type = buildingType;
+  }
+  Building(int buildingType){
+    position.x = 0;
+    position.y = 0;
+    type = buildingType;
+  }
+  Building(){
+    position.x = 0;
+    position.y = 0;
+    type = 0;
   }
 
-  //Displays the building on the cityGrid
+  //Displays the building
   void display() {
+    image(building_images[type], position.x, position.y);
   }
-  
-  //Inherited Building Possible functions:
-  //void placeBuilding(){}
-  //void removeBuilding(){}
   
 }
