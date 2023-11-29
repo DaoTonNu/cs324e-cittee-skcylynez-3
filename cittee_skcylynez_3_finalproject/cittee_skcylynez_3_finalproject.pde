@@ -209,30 +209,36 @@ void keyPressed() {
   if (key == 's' || key == 'S') {
     shopOpen = !shopOpen;
   }
-
   if (shopOpen) { //and nominal not yet initialized for this build
     //0 is unoccupied
-  //1 is cells that are occupied by a building but not the "nominal" coordinates of that building
-  //2 is a road
-  //3 is the "nominal" coordinates of a house
-  //4 is the "nominal" coordinates of a post office
-  //5 is the "nominal" coordinates of an office building
-  //6 is the "nominal" coordinates of a stadium
-  //7 is -----(continue as we add in more buildings)----------
-    if (key == 'r') {
-      buildingType = 2; 
-    } else if (key == 'h') {
-      buildingType = 3; 
-    } else if (key == 'p') {
-      buildingType = 4; 
-    } else if (key == 'o') {
-      buildingType = 5; 
-    } else if (key == 't') { //t since "s" is for shop
-      buildingType = 6; 
-    } else {
+    //1 is cells that are occupied by a building but not the "nominal" coordinates of that building
+    //2 is a road
+    //3 is the "nominal" coordinates of a house
+    //4 is the "nominal" coordinates of a post office
+    //5 is the "nominal" coordinates of an office building
+    //6 is the "nominal" coordinates of a stadium
+    //7 is -----(continue as we add in more buildings)----------
+    switch(key) {
+    case 'r':
+      buildingType = 2;
+      break;
+    case 'h':
+      buildingType = 3;
+      break;
+    case 'p':
+      buildingType = 4;
+      break;
+    case 'o':
+      buildingType = 5;
+      break;
+    case 't':
+      buildingType = 6;
+      break;
       //Other building types or is America just sports and justice? :D
+      //case '':
       //buildingType = 7;
-    }
+      //break;
+    }   
   }
 }
 
