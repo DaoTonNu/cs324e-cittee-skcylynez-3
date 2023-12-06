@@ -59,7 +59,14 @@ class Shop {
     curCost = costs.get(curARind);
   }
 
-  int chooseBuilding(char k) {
+  int returnBuildingType(char k) {
+    if (hotkeys.contains(k)) {
+      return numTypes.get(hotkeys.indexOf(k));
+    }
+    return -1;
+  }
+
+  void chooseBuilding(char k) {
     println(hotkeys); //Debugging Statement
 
     if (hotkeys.contains(k)) {
@@ -70,14 +77,12 @@ class Shop {
       curSize = sizes.get(curARind);
       curCost = costs.get(curARind);
     }
-
-    return curType;
   }
 
   //Function will return the money left
   float makePurchase(float userMoney) {
     println("before purchase: " + userMoney);
-    if (userMoney > curCost) {
+    if (curType > 1 && userMoney > curCost) {
       return userMoney-curCost;
     } else { //Cannot purchase
       return -1; //TODO Fix
