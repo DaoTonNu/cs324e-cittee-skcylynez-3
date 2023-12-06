@@ -133,7 +133,12 @@ void draw() {
       //Tax generation: just mult by household? and there has to be at least 1 office per n-ppl
       if (shopOpen) { //and nominal not yet initialized for this build
         theShop.display();
-        
+        //TODO: Place into shop stuff
+        if (!isMouseOverPauseButton() && !isMouseOverHelpButton() && !isMouseOverExitButton())
+          if (mousePressed && canPlaceBuildingHere) {
+            theCity.placeUserBuilding(int(mouseCell.x), int(mouseCell.y), buildingSelected);
+          }
+          
         //MAY MOVE TO SHOP
         //0 is unoccupied
         //1 is cells that are occupied by a building but not the "nominal" coordinates of that building
