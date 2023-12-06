@@ -102,7 +102,7 @@ void setup() {
   println("Start Money: $" + userMoney);
 
   theShop = new Shop(buildingInfo); //TODO implement
-  shopButton = new Button(50, 60, 60, 30, "Shop (S)");
+  shopButton = new Button(50, 90, 60, 30, "Shop (S)");
   initializeAssets(); //Calls to initialize game asset
   theCity = new City(cellSizeX, cellSizeY, building_images, building_sizes);
 }
@@ -191,9 +191,9 @@ void draw() {
         //-add ability to rotate image within shop!
         // ability to sell/delete? or demolition also costs >:)
         //FIXME: debug the start game also clicking on the screen and adding a road
-      } else {
-        shopButton.display();
       }
+      shopButton.display();
+
 
       drawVolumeSlider(); //Draws the volume slider
     } else {
@@ -203,6 +203,8 @@ void draw() {
       textSize(25);
       text("Paused.", width/2, height/2);
     }
+
+    displayMoney();
 
     //Draws GUI components
     drawPauseButton();
@@ -268,11 +270,12 @@ void mousePressed() {
 void mouseClicked() {
   if (shopButton.isMouseOver()) {
     shopOpen = true;
-  }
-  if (shopOpen) {
+    theShop.choosing=true;
+  } else if (shopOpen) {
     for (Button b : theShop.choiceButtons) {
-      if (b.isMouseOver()){
-        //theShop.
+      if (b.isMouseOver()) {
+        theShop.chooseBuilding(theShop.hotkeys.get(theShop.choiceButtons.indexOf(b)+2));
+        buildingSelected = theShop.returnBuildingType(theShop.curHotkey);
       }
     }
   }
@@ -305,6 +308,9 @@ void keyPressed() {
   // May need a check for if in build mode vs not first
   if (key == 's' || key == 'S') {
     shopOpen = !shopOpen;
+    if (shopOpen) {
+      theShop.choosing=true;
+    }
   }
   if (shopOpen) {
     theShop.display();
@@ -386,6 +392,17 @@ void drawHelpContent() {
   textAlign(CENTER, CENTER);
   textSize(14);
   text("Choose a building type from Shop and place it on the grid. \n Add more and more buildings to rack up points, make money, \n and grow your cittee! \n \n Click \"Pause\" or Press \"P\" to pause the game, \n \"M\" to mute, \n and \"Help\" for instructions on how to play the game.", width / 2, height / 2);
+}
+
+void displayMoney() {
+  push();
+  fill(0, 180, 180);
+  stroke(255);
+  rect(50, 60, 200, 20);
+  fill(0);
+  textAlign(LEFT, TOP);
+  text("Current Money: $" + str(userMoney), 55, 65);
+  pop();
 }
 
 //Saurelle

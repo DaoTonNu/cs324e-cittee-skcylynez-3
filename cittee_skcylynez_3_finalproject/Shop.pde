@@ -17,7 +17,7 @@ class Shop {
   String curName;
   PVector curSize;
   float curCost;
-  //char curHotkey;
+  char curHotkey;
 
   String[] tester;
 
@@ -39,7 +39,7 @@ class Shop {
       names.add(r.getString("Name"));
 
       if (n>1) {
-        choiceButtons.add(new Button(40, 40+n*40, 100, 20, r.getString("Name") + " (" + r.getString("Hotkey") + ")" ));
+        choiceButtons.add(new Button(50, 60+n*40, 100, 20, r.getString("Name") + " (" + r.getString("Hotkey") + ")" ));
       }
       n++;
 
@@ -60,6 +60,7 @@ class Shop {
     curName = names.get(curARind);
     curSize = sizes.get(curARind);
     curCost = costs.get(curARind);
+    curHotkey = hotkeys.get(curARind);
   }
 
   int returnBuildingType(char k) {
@@ -79,6 +80,7 @@ class Shop {
       curName = names.get(curARind);
       curSize = sizes.get(curARind);
       curCost = costs.get(curARind);
+      curHotkey = hotkeys.get(curARind);
     }
   }
 
