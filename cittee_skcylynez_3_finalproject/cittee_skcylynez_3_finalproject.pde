@@ -7,6 +7,8 @@ import ddf.minim.ugens.*;
 // Cittee Skcylynez 3
 // Adam, Anjali, Dao, David, Saurelle
 
+//BACKUP TODO consideration: maybe implement a PrettyCursor with animation hierarchy if we can't get people and cars working
+
 interface MenuCallback {
   void onGameStart();
 }
@@ -34,9 +36,11 @@ int cellSizeY;
 PVector mouseCell;
 PVector mousePos;
 
+int tempType;
 int buildingSelected;
 boolean canPlaceBuildingHere;
 
+float tempCost;
 float userMoney;
 
 Table buildingInfo;
@@ -47,10 +51,12 @@ City theCity;
 Shop theShop;
 boolean shopOpen = false;
 // We also need to keep track of tentative type while in shop?
-int buildingType = 0;
+//int buildingType = 0;
+Button shopButton;
 
 boolean isPaused = false;
 boolean isHelpVisible;
+boolean isMuted = false;
 
 void startGame() {
   println("The game is starting!"); //Debugging statement
@@ -93,19 +99,21 @@ void setup() {
   mousePos  = new PVector();
 
   buildingSelected = 2;
+  userMoney = 500000; //TODO: choose a good default amount?
 
   theCity = new City(cellSizeX, cellSizeY, building_images, building_sizes);
   theShop = new Shop(buildingInfo); //TODO implement
+  shopButton = new Button(50, 60, 60, 30, "Shop (S)");
 }
 
 void draw() {
   switch (gameState) {
   case MENU:
-    println("In Menu"); // Debugging statement
+    //println("In Menu"); // Debugging statement
     mainMenu.display();
     break;
   case GAME:
-    println("In Game!"); // Debugging statement
+    //println("In Game!"); // Debugging statement
     if (!isPaused) {
       background(color(51, 63, 72 )); //The color.
 
@@ -118,27 +126,54 @@ void draw() {
 
       updateMouse();
 
-      //TODO: mod for buildings in shop
-      canPlaceBuildingHere = theCity.checkForRoom(int(mouseCell.x), int(mouseCell.y), buildingSelected);
-      if (!canPlaceBuildingHere) {
-        tint(200, 100, 100, 100);
-        image(building_images[2], mousePos.x, mousePos.y);
-        noTint();
-      } else {
-        tint(100, 200, 100, 100);
-        image(building_images[2], mousePos.x, mousePos.y);
-        noTint();
-      }
-      
       //Tax generation: just mult by household? and there has to be at least 1 office per n-ppl
       if (shopOpen) { //and nominal not yet initialized for this build
         theShop.display();
-        //TODO: Place into shop stuff
-        if (!isMouseOverPauseButton() && !isMouseOverHelpButton() && !isMouseOverExitButton())
-          if (mousePressed && canPlaceBuildingHere) {
-            theCity.placeUserBuilding(int(mouseCell.x), int(mouseCell.y), buildingSelected);
+
+        //TODO: mod for buildings in shop
+        canPlaceBuildingHere = theCity.checkForRoom(int(mouseCell.x), int(mouseCell.y), buildingSelected);
+        if (!canPlaceBuildingHere) {
+          tint(200, 100, 100, 100);
+          image(building_images[buildingSelected], mousePos.x, mousePos.y);
+          noTint();
+        } else {
+          tint(100, 200, 100, 100);
+          image(building_images[buildingSelected], mousePos.x, mousePos.y);
+          noTint();
+        }
+
+
+        if (!theShop.choosing) {
+
+          //TODO: Place into shop stuff
+          if (theShop.makePurchase(userMoney)<0) {
+            push();
+            fill(255);
+            rect(width/2, 0, 100, 20);
+            fill(255,0,0);
+            textAlign(LEFT, TOP);
+            text("Insufficent Funds", width/2, 10);
+            pop();
+          } else {
+            if (!isMouseOverPauseButton() && !isMouseOverHelpButton() && !isMouseOverExitButton()) {
+              if (mousePressed && canPlaceBuildingHere) {
+                theCity.placeUserBuilding(int(mouseCell.x), int(mouseCell.y), buildingSelected);
+                userMoney = theShop.makePurchase(userMoney);
+              }
+            }
           }
-          
+        } else {
+          push();
+          fill(255);
+          rect(30, height-200, 80, 50);
+          fill(0);
+          textAlign(LEFT, TOP);
+          text("Press B to \n open/close \n choice buttons", 30, height-190);
+          pop();
+        }
+        //FIXME: nominal overlap not allowed, but non-nominal still is
+        //FIXME: comb thru implementation, seems to not all work
+
         //MAY MOVE TO SHOP
         //0 is unoccupied
         //1 is cells that are occupied by a building but not the "nominal" coordinates of that building
@@ -151,27 +186,8 @@ void draw() {
         //-add ability to rotate image within shop!
         // ability to sell/delete? or demolition also costs >:)
         //FIXME: debug the start game also clicking on the screen and adding a road
-        switch(key) {
-        case 'r':
-          buildingType = 2;
-          break;
-        case 'h':
-          buildingType = 3;
-          break;
-        case 'p':
-          buildingType = 4;
-          break;
-        case 'o':
-          buildingType = 5;
-          break;
-        case 't':
-          buildingType = 6;
-          break;
-          //Other building types or is America just sports and justice? :D
-          //case '':
-          //buildingType = 7;
-          //break;
-        }
+      } else {
+        shopButton.display();
       }
 
       drawVolumeSlider(); //Draws the volume slider
@@ -244,6 +260,12 @@ void mousePressed() {
   }
 }
 
+void mouseClicked() {
+  if (shopButton.isMouseOver()) {
+    shopOpen = true;
+  }
+}
+
 void mouseReleased() {
   draggingVolume = false;
 }
@@ -256,6 +278,15 @@ void keyPressed() {
   // Check if the "P" key is pressed
   if (key == 'p' || key == 'P') {
     isPaused = !isPaused;  // Toggle the isPaused variable
+  } else if (key == 'm' || key == 'M') {
+    isMuted = !isMuted;  // Toggle the isPaused variable
+    if (isMuted) {
+      gameMusic.setGain(20 * log10(0));
+    } else {
+      gameMusic.setGain(20 * log10(volume));
+    }
+  } else if (key == 'b' || key == 'B') {
+    theShop.choosing = !theShop.choosing;
   }
 
   //Within Build mode / inside shop
@@ -263,8 +294,13 @@ void keyPressed() {
   if (key == 's' || key == 'S') {
     shopOpen = !shopOpen;
   }
-  if(shopOpen){
+  if (shopOpen) {
     theShop.display();
+    tempType = theShop.chooseBuilding(key);
+    if (tempType>1 && tempType<5) { //FIXME: currently breaks for type >=5, we also need to ensure sheet and city match up
+      buildingSelected = tempType;
+    }
+    println(buildingSelected);// DEBUGGING statement
   }
 }
 void drawSaveButton() {
@@ -336,10 +372,8 @@ void drawHelpContent() {
   fill(0);
   textAlign(CENTER, CENTER);
   textSize(14);
-  text("Choose a building type from Shop and place it on the grid. \n Add more and more buildings to rack up points, make money, \n and grow your cittee! \n \n Click \"Pause\" or Press \"P\" to pause the game \n and \"Help\" for instructions on how to play the game.", width / 2, height / 2);
+  text("Choose a building type from Shop and place it on the grid. \n Add more and more buildings to rack up points, make money, \n and grow your cittee! \n \n Click \"Pause\" or Press \"P\" to pause the game, \n \"M\" to mute, \n and \"Help\" for instructions on how to play the game.", width / 2, height / 2);
 }
-
-//Funcs dealing with sound
 
 //Saurelle
 //Note that this may be moved around or split up amongst the other classes,
