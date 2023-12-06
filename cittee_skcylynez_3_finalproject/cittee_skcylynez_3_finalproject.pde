@@ -1,11 +1,13 @@
+// Cittee Skcylynez 3
+// Adam, Anjali, Dao, David, Saurelle
+
 import ddf.minim.analysis.*;
 import ddf.minim.effects.*;
 import ddf.minim.signals.*;
 import ddf.minim.spi.*;
 import ddf.minim.ugens.*;
 
-// Cittee Skcylynez 3
-// Adam, Anjali, Dao, David, Saurelle
+//BACKUP TODO consideration: maybe implement a PrettyCursor with animation hierarchy if we can't get people and cars working
 
 interface MenuCallback {
   void onGameStart();
@@ -34,21 +36,27 @@ int cellSizeY;
 PVector mouseCell;
 PVector mousePos;
 
+int tempType;
 int buildingSelected;
 boolean canPlaceBuildingHere;
 
+float tempCost;
 float userMoney;
 
+Table buildingInfo;
 PImage[] building_images; //Uses the same building ID's as the City class
 PVector[] building_sizes;
 
 City theCity;
+Shop theShop;
 boolean shopOpen = false;
 // We also need to keep track of tentative type while in shop?
-int buildingType = 0;
+//int buildingType = 0;
+Button shopButton;
 
 boolean isPaused = false;
 boolean isHelpVisible;
+boolean isMuted = false;
 
 void startGame() {
   println("The game is starting!"); //Debugging statement
@@ -61,14 +69,15 @@ void setup() {
 
   gameState = MENU; //Starts with the main menu
   mainMenu = new MainMenu(this);
-  initializeAssets(); //Calls to initialize game assets
+  buildingInfo = loadTable("BuildingTypes.csv", "header");
 
   //Sets the callback for the main menu
   mainMenu.setMenuCallback(new MenuCallback() {
     public void onGameStart() {
       startGame();
     }
-  });
+  }
+  );
 
   // Music
   minim = new Minim(this);
@@ -77,8 +86,6 @@ void setup() {
   gameMusic = minim.loadFile("firststeps.mp3", 2048);
 
   background(color(51, 63, 72 )); //The color.
-
-  initializeAssets();
 
   stroke(255);
   fill(255);
@@ -91,66 +98,125 @@ void setup() {
   mousePos  = new PVector();
 
   buildingSelected = 2;
+  userMoney = 500000; //TODO: choose a good default amount?
+  println("Start Money: $" + userMoney);
 
+  theShop = new Shop(buildingInfo); //TODO implement
+  shopButton = new Button(50, 90, 60, 30, "Shop (S)");
+  initializeAssets(); //Calls to initialize game asset
   theCity = new City(cellSizeX, cellSizeY, building_images, building_sizes);
 }
 
 void draw() {
   switch (gameState) {
-    case MENU:
-      println("In Menu"); // Debugging statement
-      mainMenu.display();
-      break;
-    case GAME:
-      println("In Game!"); // Debugging statement
-      if (!isPaused) {
-        background(color(51, 63, 72 )); //The color.
+  case MENU:
+    //println("In Menu"); // Debugging statement
+    mainMenu.display();
+    break;
+  case GAME:
+    //println("In Game!"); // Debugging statement
+    if (!isPaused) {
+      background(color(51, 63, 72 )); //The color.
 
-        fill(255); // Resetting colors at the beginning of draw
-        stroke(255);
-        strokeWeight(1);
+      fill(255); // Resetting colors at the beginning of draw
+      stroke(255);
+      strokeWeight(1);
 
-        theCity.displayGridLines();
-        theCity.displayBuildings();
+      theCity.displayGridLines();
+      theCity.displayBuildings();
 
-        updateMouse();
+      updateMouse();
 
+      //Tax generation: just mult by household? and there has to be at least 1 office per n-ppl
+      if (shopOpen) { //and nominal not yet initialized for this build
+        theShop.display();
+
+        //TODO: mod for buildings in shop
         canPlaceBuildingHere = theCity.checkForRoom(int(mouseCell.x), int(mouseCell.y), buildingSelected);
         if (!canPlaceBuildingHere) {
           tint(200, 100, 100, 100);
-          image(building_images[2], mousePos.x, mousePos.y);
+          image(building_images[buildingSelected], mousePos.x, mousePos.y);
           noTint();
         } else {
           tint(100, 200, 100, 100);
-          image(building_images[2], mousePos.x, mousePos.y);
+          image(building_images[buildingSelected], mousePos.x, mousePos.y);
           noTint();
         }
 
-        if (!isMouseOverPauseButton() && !isMouseOverHelpButton() && !isMouseOverExitButton())
-          if (mousePressed && canPlaceBuildingHere) {
-            theCity.placeUserBuilding(int(mouseCell.x), int(mouseCell.y), buildingSelected);
+
+        if (!theShop.choosing) {
+
+          //TODO: Place into shop stuff
+          if (theShop.makePurchase(userMoney)<0) {
+
+            if (theShop.curType>1) {
+              push();
+              fill(255);
+              rect(width/2, 0, 100, 20);
+              fill(255, 0, 0);
+              textAlign(LEFT, TOP);
+              text("Insufficent Funds", width/2, 10);
+              pop();
+            }
+          } else {
+            if (!isMouseOverPauseButton() && !isMouseOverHelpButton() && !isMouseOverExitButton() &&!isMouseOverSaveButton()) {
+              if (mousePressed && canPlaceBuildingHere) {
+                theCity.placeUserBuilding(int(mouseCell.x), int(mouseCell.y), buildingSelected);
+                userMoney = theShop.makePurchase(userMoney);
+                println("after purchase: " + userMoney); //Debugging statement
+              }
+            }
           }
+        } else {
+          push();
+          fill(255);
+          rect(30, height-200, 80, 50);
+          fill(0);
+          textAlign(LEFT, TOP);
+          text("Press B to \n open/close \n choice buttons", 30, height-190);
+          pop();
+        }
+        //FIXME: nominal overlap not allowed, but non-nominal still is
+        //FIXME: comb thru implementation, seems to not all work
 
-        drawVolumeSlider(); //Draws the volume slider
-      } else {
-        fill(0, 0, 0, 70);
-        rect(0, 0, width, height);
-        fill(255);
-        textSize(25);
-        text("Paused.", width/2, height/2);
+        //MAY MOVE TO SHOP
+        //0 is unoccupied
+        //1 is cells that are occupied by a building but not the "nominal" coordinates of that building
+        //2 is a road
+        //3 is the "nominal" coordinates of a house
+        //4 is the "nominal" coordinates of a post office
+        //5 is the "nominal" coordinates of an office building
+        //6 is the "nominal" coordinates of a stadium
+        //7 is -----(continue as we add in more buildings)----------
+        //-add ability to rotate image within shop!
+        // ability to sell/delete? or demolition also costs >:)
+        //FIXME: debug the start game also clicking on the screen and adding a road
       }
+      shopButton.display();
 
-      //Draws GUI components
-      drawPauseButton();
-      drawHelpButton();
-      drawExitButton();
-      drawSaveButton();
 
-      if (isHelpVisible) {
-        drawHelpContent();
-      }
+      drawVolumeSlider(); //Draws the volume slider
+    } else {
+      fill(0, 0, 0, 70);
+      rect(0, 0, width, height);
+      fill(255);
+      textSize(25);
+      text("Paused.", width/2, height/2);
+    }
 
-      break;
+    displayMoney();
+
+    //Draws GUI components
+    drawPauseButton();
+    drawHelpButton();
+    drawExitButton();
+    drawSaveButton();
+
+    if (isHelpVisible) {
+      drawHelpContent();
+    }
+
+    break;
   }
 }
 
@@ -191,12 +257,30 @@ void mousePressed() {
       gameMusic.pause(); //Stops the in-game music
       gameMusic.rewind(); //Rewinds the in-game music to the start
       mainMenu.restartMusic();  //Restarts the main menu music
+    } else if (isMouseOverSaveButton()){
+      print("Game has been saved");
+      saveGame();
+      theCity.saveCity();
     } else {
       mainMenu.mousePressed();
     }
 
     //Checks for game interactions only if it's not interacting with the UI
-    if (!isMouseOverPauseButton() && !isMouseOverHelpButton() && !isMouseOverExitButton()) {
+    if (!isMouseOverPauseButton() && !isMouseOverHelpButton() && !isMouseOverExitButton() && !isMouseOverSaveButton()) {
+    }
+  }
+}
+
+void mouseClicked() {
+  if (shopButton.isMouseOver()) {
+    shopOpen = true;
+    theShop.choosing=true;
+  } else if (shopOpen) {
+    for (Button b : theShop.choiceButtons) {
+      if (b.isMouseOver()) {
+        theShop.chooseBuilding(theShop.hotkeys.get(theShop.choiceButtons.indexOf(b)+2));
+        buildingSelected = theShop.returnBuildingType(theShop.curHotkey);
+      }
     }
   }
 }
@@ -213,43 +297,33 @@ void keyPressed() {
   // Check if the "P" key is pressed
   if (key == 'p' || key == 'P') {
     isPaused = !isPaused;  // Toggle the isPaused variable
+  } else if (key == 'm' || key == 'M') {
+    isMuted = !isMuted;  // Toggle the isPaused variable
+    if (isMuted) {
+      gameMusic.setGain(20 * log10(0));
+    } else {
+      gameMusic.setGain(20 * log10(volume));
+    }
+  } else if (key == 'b' || key == 'B') {
+    theShop.choosing = !theShop.choosing;
   }
 
   //Within Build mode / inside shop
   // May need a check for if in build mode vs not first
   if (key == 's' || key == 'S') {
     shopOpen = !shopOpen;
+    if (shopOpen) {
+      theShop.choosing=true;
+    }
   }
-  if (shopOpen) { //and nominal not yet initialized for this build
-    //0 is unoccupied
-    //1 is cells that are occupied by a building but not the "nominal" coordinates of that building
-    //2 is a road
-    //3 is the "nominal" coordinates of a house
-    //4 is the "nominal" coordinates of a post office
-    //5 is the "nominal" coordinates of an office building
-    //6 is the "nominal" coordinates of a stadium
-    //7 is -----(continue as we add in more buildings)----------
-    switch(key) {
-    case 'r':
-      buildingType = 2;
-      break;
-    case 'h':
-      buildingType = 3;
-      break;
-    case 'p':
-      buildingType = 4;
-      break;
-    case 'o':
-      buildingType = 5;
-      break;
-    case 't':
-      buildingType = 6;
-      break;
-      //Other building types or is America just sports and justice? :D
-      //case '':
-      //buildingType = 7;
-      //break;
-    }   
+  if (shopOpen) {
+    theShop.display();
+    tempType = theShop.returnBuildingType(key);
+    if (tempType>1) { //&& tempType<5) { //FIXME: currently breaks for type >=5, we also need to ensure sheet and city match up
+      theShop.chooseBuilding(key);
+      buildingSelected = tempType;
+    }
+    println(buildingSelected);// DEBUGGING statement
   }
 }
 void drawSaveButton() {
@@ -314,6 +388,11 @@ boolean isMouseOverExitButton() {
   return mouseX > width - 180 && mouseX < width - 140 && mouseY > 10 && mouseY < 30;
 }
 
+boolean isMouseOverSaveButton() {
+  // Check if the mouse is over the help button
+  return mouseX > width - 240 && mouseX < width - 200 && mouseY > 10 && mouseY < 30;
+}
+
 void drawHelpContent() {
   // Draw your help content here
   fill(255);
@@ -321,10 +400,19 @@ void drawHelpContent() {
   fill(0);
   textAlign(CENTER, CENTER);
   textSize(14);
-  text("Choose a building type from Shop and place it on the grid. \n Add more and more buildings to rack up points, make money, \n and grow your cittee! \n \n Click \"Pause\" or Press \"P\" to pause the game \n and \"Help\" for instructions on how to play the game.", width / 2, height / 2);
+  text("Choose a building type from Shop and place it on the grid. \n Add more and more buildings to rack up points, make money, \n and grow your cittee! \n \n Click \"Pause\" or Press \"P\" to pause the game, \n \"M\" to mute, \n and \"Help\" for instructions on how to play the game.", width / 2, height / 2);
 }
 
-//Funcs dealing with sound
+void displayMoney() {
+  push();
+  fill(0, 180, 180);
+  stroke(255);
+  rect(50, 60, 200, 20);
+  fill(0);
+  textAlign(LEFT, TOP);
+  text("Current Money: $" + str(userMoney), 55, 65);
+  pop();
+}
 
 //Saurelle
 //Note that this may be moved around or split up amongst the other classes,
@@ -339,21 +427,18 @@ void initializeAssets() {
   //4 is the "nominal" coordinates of a post office
   //5 is the "nominal" coordinates of an office building
   //6 is the "nominal" coordinates of a stadium
-  building_images = new PImage[10];
-  building_images[2] = loadImage("Road.png");
-  building_images[3] = loadImage("House.png");
-  building_images[4] = loadImage("PostOffice.png");
+  int numChoices = theShop.names.size();
 
-  building_sizes = new PVector[10];
-  for (int i = 1; i<building_sizes.length; i++) {
-    building_sizes[i] = new PVector();
+  building_sizes = new PVector[numChoices];
+  for (int i = 2; i < numChoices; i++) {
+    building_sizes[i] = theShop.sizes.get(i);
   }
-  building_sizes[2].x = 1;
-  building_sizes[2].y = 1;
-  building_sizes[3].x = 2;
-  building_sizes[3].y = 2;
-  building_sizes[4].x = 3;
-  building_sizes[4].y = 2;
+
+  building_images = new PImage[numChoices];
+  for (int i = 2; i < numChoices; i++) {
+    building_images[i] = loadImage(theShop.names.get(i) + ".png");
+    building_images[i].resize(int(building_sizes[i].x*cellSizeX), int(building_sizes[i].y*cellSizeY));
+  }
 }
 
 void updateMouse() {
@@ -363,4 +448,60 @@ void updateMouse() {
   mouseCell.y = constrain(mouseCell.y, 0, (height / cellSizeY)-1);
   mousePos.x = mouseCell.x  * cellSizeX;
   mousePos.y = mouseCell.y * cellSizeY;
+}
+
+void saveGame() {
+  JSONObject saveData = new JSONObject();
+
+  saveData.setInt("gameState", gameState);
+  saveData.setFloat("volume", volume);
+  saveData.setFloat("sliderX", sliderX);
+  saveData.setFloat("sliderWidth", sliderWidth);
+  saveData.setBoolean("draggingVolume", draggingVolume);
+  saveData.setInt("cellSizeX", cellSizeX);
+  saveData.setInt("cellSizeY", cellSizeY);
+  saveData.setInt("tempType", tempType);
+  saveData.setInt("buildingSelected", buildingSelected);
+  saveData.setBoolean("canPlaceBuildingHere", canPlaceBuildingHere);
+  saveData.setFloat("tempCost", tempCost);
+  saveData.setFloat("userMoney", userMoney);
+  saveData.setBoolean("shopOpen", shopOpen);
+  saveData.setBoolean("isPaused", isPaused);
+  saveData.setBoolean("isHelpVisible", isHelpVisible);
+  saveData.setBoolean("isMuted", isMuted);
+
+  JSONObject cityData = theCity.toJSON();
+  saveData.setJSONObject("city", cityData);
+
+  JSONObject shopData = theShop.toJSON();
+  saveData.setJSONObject("shop", shopData);
+
+  saveJSONObject(saveData, "savegame.json");
+}
+
+void loadGame() {
+  JSONObject loadData = loadJSONObject("savegame.json");
+
+  gameState = loadData.getInt("gameState");
+  volume = loadData.getFloat("volume");
+  sliderX = loadData.getFloat("sliderX");
+  sliderWidth = loadData.getFloat("sliderWidth");
+  draggingVolume = loadData.getBoolean("draggingVolume");
+  cellSizeX = loadData.getInt("cellSizeX");
+  cellSizeY = loadData.getInt("cellSizeY");
+  tempType = loadData.getInt("tempType");
+  buildingSelected = loadData.getInt("buildingSelected");
+  canPlaceBuildingHere = loadData.getBoolean("canPlaceBuildingHere");
+  tempCost = loadData.getFloat("tempCost");
+  userMoney = loadData.getFloat("userMoney");
+  shopOpen = loadData.getBoolean("shopOpen");
+  isPaused = loadData.getBoolean("isPaused");
+  isHelpVisible = loadData.getBoolean("isHelpVisible");
+  isMuted = loadData.getBoolean("isMuted");
+
+  theCity.saveCity();
+
+  JSONObject shopData = loadData.getJSONObject("shop");
+  theShop = new Shop(shopData);
+
 }
