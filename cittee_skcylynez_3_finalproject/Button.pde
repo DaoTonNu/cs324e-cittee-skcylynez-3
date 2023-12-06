@@ -1,22 +1,25 @@
 //Anjali
 class Button {
-  float x, y, width, height;
+  //Note from Dao, who is using your button class for the shop button: 
+  //I do advise against using width and height alone since Processing reserves that as the canvas width and height; 
+  //try w and h instead?
+  float x, y, w, h;
   String label;
   PImage image;
 
-  Button(float x, float y, float width, float height, String label) {
+  Button(float x, float y, float w, float h, String label) {
     this.x = x;
     this.y = y;
-    this.width = width;
-    this.height = height;
+    this.w = w;
+    this.h = h;
     this.label = label;
   }
   
   Button(float x, float y, PImage image) {
     this.x = x;
     this.y = y;
-    this.width = image.width;
-    this.height = image.height;
+    this.w = image.width;
+    this.h = image.height;
     this.image = image;
   }
 
@@ -30,18 +33,18 @@ class Button {
   
   void display() {
     if (image != null) {
-      image(image, x, y, width, height);
+      image(image, x, y, w, h);
     } else {
       fill(200);
-      rect(x, y, width, height);
+      rect(x, y, w, h);
       fill(0);
       textAlign(CENTER, CENTER);
-      text(label, x + width / 2, y + height / 2);
+      text(label, x + w / 2, y + h / 2);
     }
   }
   
 
   boolean isMouseOver() {
-    return mouseX > x && mouseX < x + width && mouseY > y && mouseY < y + height;
+    return mouseX > x && mouseX < x + w && mouseY > y && mouseY < y + h;
   }
 }

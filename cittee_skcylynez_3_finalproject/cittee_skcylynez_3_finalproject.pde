@@ -49,9 +49,11 @@ Shop theShop;
 boolean shopOpen = false;
 // We also need to keep track of tentative type while in shop?
 //int buildingType = 0;
+Button shopButton;
 
 boolean isPaused = false;
 boolean isHelpVisible;
+boolean isMuted = false;
 
 void startGame() {
   println("The game is starting!"); //Debugging statement
@@ -97,6 +99,7 @@ void setup() {
 
   theCity = new City(cellSizeX, cellSizeY, building_images, building_sizes);
   theShop = new Shop(buildingInfo); //TODO implement
+  shopButton = new Button(50, 60, 60, 30, "Shop");
 }
 
 void draw() {
@@ -140,6 +143,9 @@ void draw() {
             theCity.placeUserBuilding(int(mouseCell.x), int(mouseCell.y), buildingSelected);
           }
 
+        //FIXME: nominal overlap not allowed, but non-nominal still is
+        //FIXME: comb thru implementation, seems to not all work
+
         //MAY MOVE TO SHOP
         //0 is unoccupied
         //1 is cells that are occupied by a building but not the "nominal" coordinates of that building
@@ -152,6 +158,8 @@ void draw() {
         //-add ability to rotate image within shop!
         // ability to sell/delete? or demolition also costs >:)
         //FIXME: debug the start game also clicking on the screen and adding a road
+      } else {
+        shopButton.display();
       }
 
       drawVolumeSlider(); //Draws the volume slider
@@ -224,6 +232,12 @@ void mousePressed() {
   }
 }
 
+void mouseClicked() {
+  if (shopButton.isMouseOver()) {
+    shopOpen = true;
+  }
+}
+
 void mouseReleased() {
   draggingVolume = false;
 }
@@ -236,6 +250,14 @@ void keyPressed() {
   // Check if the "P" key is pressed
   if (key == 'p' || key == 'P') {
     isPaused = !isPaused;  // Toggle the isPaused variable
+  }
+  if (key == 'm' || key == 'M') {
+    isMuted = !isMuted;  // Toggle the isPaused variable
+    if (isMuted) {
+      gameMusic.setGain(20 * log10(0));
+    } else {
+      gameMusic.setGain(20 * log10(volume));
+    }
   }
 
   //Within Build mode / inside shop
@@ -321,10 +343,8 @@ void drawHelpContent() {
   fill(0);
   textAlign(CENTER, CENTER);
   textSize(14);
-  text("Choose a building type from Shop and place it on the grid. \n Add more and more buildings to rack up points, make money, \n and grow your cittee! \n \n Click \"Pause\" or Press \"P\" to pause the game \n and \"Help\" for instructions on how to play the game.", width / 2, height / 2);
+  text("Choose a building type from Shop and place it on the grid. \n Add more and more buildings to rack up points, make money, \n and grow your cittee! \n \n Click \"Pause\" or Press \"P\" to pause the game, \n \"M\" to mute, \n and \"Help\" for instructions on how to play the game.", width / 2, height / 2);
 }
-
-//Funcs dealing with sound
 
 //Saurelle
 //Note that this may be moved around or split up amongst the other classes,
