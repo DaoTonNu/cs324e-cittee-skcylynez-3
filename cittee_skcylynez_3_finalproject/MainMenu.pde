@@ -1,5 +1,3 @@
-//Adam
-
 import ddf.minim.*;
 import processing.core.PApplet;
 import java.util.ArrayList;
@@ -42,7 +40,7 @@ class MainMenu {
     MainMenu(PApplet parent) {
         this.parent = parent;
         this.minim = new Minim(parent);
-        this.menuMusic = this.minim.loadFile("firststeps.mp3", 2048);
+        this.menuMusic = this.minim.loadFile("lake.mp3", 2048);
         this.menuMusic.loop();
 
         //Clouds
@@ -59,8 +57,17 @@ class MainMenu {
     void setMenuCallback(MenuCallback callback) {
         this.callback = callback;
     }
+    
+    void restartMusic() {
+        if (menuMusic.isPlaying()) {
+            menuMusic.pause();
+            menuMusic.rewind();
+        }
+        menuMusic.play();
+    }
 
     void display() {
+      
         parent.background(135, 206, 235); //Blue sky background
 
         //Draw and update clouds
@@ -70,20 +77,32 @@ class MainMenu {
         }
 
         //Draw skyscrapers
-        int[] buildingHeights = {220, 300, 200, 350, 270, 310}; //Skyscraper heights
+        int[] buildingHeights = {220, 300, 200, 350, 270, 310, 400, 360}; //Skyscraper heights
         for (int i = 0; i < buildingHeights.length; i++) {
             int x = 120 * i + 60;
             parent.fill(60); //Buildings' color
             parent.rect(x, parent.height - buildingHeights[i], 60, buildingHeights[i]);
             drawWindows(x, parent.height - buildingHeights[i], 60, buildingHeights[i]);
         }
+        
+        //Draws the "Start New Game" button
+        int buttonX = parent.width / 2 - 100;
+        int buttonY = parent.height - 100;
+        int buttonWidth = 200;
+        int buttonHeight = 50;
+        parent.fill(0, 102, 153);
+        parent.rect(buttonX, buttonY, buttonWidth, buttonHeight);
+        parent.fill(255);
+        parent.textSize(20);
+        parent.text("Start New Game", buttonX + buttonWidth / 2, buttonY + buttonHeight / 2);
 
         //Menu text
+        //Ignore static error, it is fine
         parent.textAlign(parent.CENTER, parent.CENTER);
         parent.textSize(32);
         parent.fill(255);
         int textHeight = parent.height - 390;
-        parent.text("Start Game", parent.width / 2 , textHeight);
+        parent.text("Continue Game", parent.width / 2 , textHeight);
 
         //Checks the mouse clicks
         if (parent.mouseX > parent.width / 2 - 100 && parent.mouseX < parent.width / 2 + 100 && parent.mouseY > textHeight - 16 && parent.mouseY < textHeight + 16) {
@@ -121,5 +140,14 @@ class MainMenu {
     }
 
     void mousePressed() {
-    }
+        int buttonX = parent.width / 2 - 100;
+        int buttonY = parent.height - 100;
+        int buttonWidth = 200;
+        int buttonHeight = 50;
+    
+        if (parent.mouseX > buttonX && parent.mouseX < buttonX + buttonWidth && parent.mouseY > buttonY && parent.mouseY < buttonY + buttonHeight) {
+            callback.onGameStart();
+            stopMusic();
+        }
+}
 }
