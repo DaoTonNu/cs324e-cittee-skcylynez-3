@@ -147,13 +147,16 @@ void draw() {
 
           //TODO: Place into shop stuff
           if (theShop.makePurchase(userMoney)<0) {
-            push();
-            fill(255);
-            rect(width/2, 0, 100, 20);
-            fill(255,0,0);
-            textAlign(LEFT, TOP);
-            text("Insufficent Funds", width/2, 10);
-            pop();
+
+            if (theShop.curType>1) {
+              push();
+              fill(255);
+              rect(width/2, 0, 100, 20);
+              fill(255, 0, 0);
+              textAlign(LEFT, TOP);
+              text("Insufficent Funds", width/2, 10);
+              pop();
+            }
           } else {
             if (!isMouseOverPauseButton() && !isMouseOverHelpButton() && !isMouseOverExitButton()) {
               if (mousePressed && canPlaceBuildingHere) {
@@ -296,8 +299,9 @@ void keyPressed() {
   }
   if (shopOpen) {
     theShop.display();
-    tempType = theShop.chooseBuilding(key);
+    tempType = theShop.returnBuildingType(key);
     if (tempType>1 && tempType<5) { //FIXME: currently breaks for type >=5, we also need to ensure sheet and city match up
+      theShop.chooseBuilding(key);
       buildingSelected = tempType;
     }
     println(buildingSelected);// DEBUGGING statement
