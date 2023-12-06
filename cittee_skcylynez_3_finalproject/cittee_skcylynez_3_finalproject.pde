@@ -1,12 +1,11 @@
-import ddf.minim.*;
 import ddf.minim.analysis.*;
 import ddf.minim.effects.*;
 import ddf.minim.signals.*;
 import ddf.minim.spi.*;
 import ddf.minim.ugens.*;
 
-//Cittee Skcylynez 3
-//Adam, Anjali, Dao, David, Saurelle
+// Cittee Skcylynez 3
+// Adam, Anjali, Dao, David, Saurelle
 
 interface MenuCallback {
   void onGameStart();
@@ -16,14 +15,18 @@ interface MenuCallback {
 final int MENU = 0, GAME = 1; // Add more states as needed
 int gameState;
 
-//Menu
+// Menu
 MainMenu mainMenu;
 
-//Minim library (download from Sketch -> Manage Libraries -> Search Minim -> Download
+// Minim library
 Minim minim;
 AudioPlayer gameMusic;
 
-//Moved over a lot of old globals into the City Class in an attempt to keep everything more organized
+//Volume slider variables
+float volume = 0.5; //Initial volume is at 50%
+float sliderX = 50;
+float sliderWidth = 200;
+boolean draggingVolume = false; // Checks to see whether the volume slider is being dragged
 
 int cellSizeX;
 int cellSizeY;
@@ -36,11 +39,7 @@ boolean canPlaceBuildingHere;
 
 float userMoney;
 
-//float timePlayed;
-//float daysCounter;
-//int population;
-
-PImage[] building_images;//Use the same building ID's as the City class
+PImage[] building_images; //Uses the same building ID's as the City class
 PVector[] building_sizes;
 
 City theCity;
@@ -50,38 +49,32 @@ int buildingType = 0;
 
 boolean isPaused = false;
 boolean isHelpVisible;
-boolean isMuted = false;
-PImage muteImage;
-
 
 void startGame() {
-  println("Starting game"); // Debugging statement
+  println("The game is starting!"); //Debugging statement
   gameState = GAME;
-
-  //Starts playing the game music
   gameMusic.loop();
 }
 
 void setup() {
-  size(800, 600);//Feel free to change this as needed, LET'S TRY TO KEEP EVERYTHING IN TERMS OF WIDTH AND HEIGHT pls :)
+  size(1000, 600);
 
-  gameState = MENU; // Start with the main menu
-  mainMenu = new MainMenu(this); // Create an instance of your existing MainMenu class
-  initializeAssets(); // Call to initialize game assets
+  gameState = MENU; //Starts with the main menu
+  mainMenu = new MainMenu(this);
+  initializeAssets(); //Calls to initialize game assets
 
-  // Set the callback for the main menu
+  //Sets the callback for the main menu
   mainMenu.setMenuCallback(new MenuCallback() {
     public void onGameStart() {
       startGame();
     }
-  }
-  );
+  });
 
-  //Music
+  // Music
   minim = new Minim(this);
 
-  //Loads the "lake.mp3" song
-  gameMusic = minim.loadFile("lake.mp3", 2048);
+  // Loads the "firststeps.mp3" song
+  gameMusic = minim.loadFile("firststeps.mp3", 2048);
 
   background(color(51, 63, 72 )); //The color.
 
@@ -100,108 +93,126 @@ void setup() {
   buildingSelected = 2;
 
   theCity = new City(cellSizeX, cellSizeY, building_images, building_sizes);
-
-  muteImage = loadImage("mute.png");
 }
 
 void draw() {
   switch (gameState) {
-  case MENU:
-    println("In Menu"); // Debugging statement
-    mainMenu.display();
-    break;
-  case GAME:
-    println("In Game"); // Debugging statement
-    Button pauseButton = new Button(width - 50, 10, 40, 20, "Pause");
-    Button helpButton = new Button(width - 50, 10, 40, 20, "Help");
-    Button exitButton = new Button(width - 50, 10, 40, 20, "Exit");
-    Button muteButton = new Button(width - 100, 10, muteImage);
-    if (!isPaused) {
-      background(color(51, 63, 72 )); //The color.
+    case MENU:
+      println("In Menu"); // Debugging statement
+      mainMenu.display();
+      break;
+    case GAME:
+      println("In Game!"); // Debugging statement
+      if (!isPaused) {
+        background(color(51, 63, 72 )); //The color.
 
-      fill(255); //God it's annoying to keep track of this stuff, I'm just resetting everything at the beginning of draw for now
-      stroke(255); //Feel free to remove this if needed.
-      strokeWeight(1);
+        fill(255); // Resetting colors at the beginning of draw
+        stroke(255);
+        strokeWeight(1);
 
-      theCity.displayGridLines();
-      theCity.displayBuildings();
+        theCity.displayGridLines();
+        theCity.displayBuildings();
 
-      updateMouse();
+        updateMouse();
 
-      canPlaceBuildingHere = theCity.checkForRoom(int(mouseCell.x), int(mouseCell.y), buildingSelected);
-      if (!canPlaceBuildingHere) {
-        tint(200, 100, 100, 100);
-        image(building_images[2], mousePos.x, mousePos.y);
-        noTint();
-        println("Here3");
-      } else {
-        tint(100, 200, 100, 100);
-        image(building_images[2], mousePos.x, mousePos.y);
-        noTint();
-        println("Here2");
-      }
-
-      if (!isMouseOverPauseButton() && !isMouseOverHelpButton() && !isMouseOverExitButton() && !isMouseOverMuteButton())
-        if (mousePressed && canPlaceBuildingHere) {
-          theCity.placeUserBuilding(int(mouseCell.x), int(mouseCell.y), buildingSelected);
-          println("Here");
+        canPlaceBuildingHere = theCity.checkForRoom(int(mouseCell.x), int(mouseCell.y), buildingSelected);
+        if (!canPlaceBuildingHere) {
+          tint(200, 100, 100, 100);
+          image(building_images[2], mousePos.x, mousePos.y);
+          noTint();
+        } else {
+          tint(100, 200, 100, 100);
+          image(building_images[2], mousePos.x, mousePos.y);
+          noTint();
         }
 
-      if (!isMuted) {
-        // Play sound or perform other sound-related actions
+        if (!isMouseOverPauseButton() && !isMouseOverHelpButton() && !isMouseOverExitButton())
+          if (mousePressed && canPlaceBuildingHere) {
+            theCity.placeUserBuilding(int(mouseCell.x), int(mouseCell.y), buildingSelected);
+          }
+
+        drawVolumeSlider(); //Draws the volume slider
+      } else {
+        fill(0, 0, 0, 70);
+        rect(0, 0, width, height);
+        fill(255);
+        textSize(25);
+        text("Paused.", width/2, height/2);
       }
+
+      //Draws GUI components
+      drawPauseButton();
+      drawHelpButton();
+      drawExitButton();
+      drawSaveButton();
+
+      if (isHelpVisible) {
+        drawHelpContent();
+      }
+
+      break;
+  }
+}
+
+void drawVolumeSlider() {
+  stroke(255);
+  fill(200);
+  rect(sliderX, 10, sliderWidth, 20);
+
+  float handleX = sliderX + volume * sliderWidth;
+  fill(255);
+  rect(handleX, 5, 10, 30);
+
+  if (draggingVolume) {
+    volume = constrain((mouseX - sliderX) / sliderWidth, 0, 1);
+    gameMusic.setGain(20 * log10(volume));
+  }
+
+  //Displays the volume percentage
+  fill(255);
+  textSize(12);
+  textAlign(CENTER, CENTER);
+  text(int(volume * 100) + "%", handleX, 35);
+}
+
+void mousePressed() {
+  //Checks to see if the mouse click is within the volume slider area
+  if (mouseX >= sliderX && mouseX <= sliderX + sliderWidth && mouseY >= 5 && mouseY <= 35) {
+    draggingVolume = true;
+    volume = constrain((mouseX - sliderX) / sliderWidth, 0, 1);
+    gameMusic.setGain(20 * log10(volume));
+  } else {
+    if (isMouseOverPauseButton()) {
+      isPaused = !isPaused;
+    } else if (isMouseOverHelpButton()) {
+      isHelpVisible = !isHelpVisible;
+    } else if (isMouseOverExitButton()) {
+      gameState = MENU;
+      gameMusic.pause(); //Stops the in-game music
+      gameMusic.rewind(); //Rewinds the in-game music to the start
+      mainMenu.restartMusic();  //Restarts the main menu music
     } else {
-      fill(0, 0, 0, 70);
-      rect(0, 0, width, height);
-      fill(255);
-      textSize(25);
-      text("Paused.", width/2, height/2);
+      mainMenu.mousePressed();
     }
 
-    drawPauseButton();
-    drawHelpButton();
-    drawExitButton();
-    drawMuteButton();
-
-    if (isHelpVisible) {
-      drawHelpContent();
+    //Checks for game interactions only if it's not interacting with the UI
+    if (!isMouseOverPauseButton() && !isMouseOverHelpButton() && !isMouseOverExitButton()) {
     }
   }
 }
 
-//Dao, David
-//Classes (filed), plus figure out shop?
-
-//Adam, Anjali
-//Consider moving the in depth funcs for these
-//to different files, maybe under a GameSettings class or something?
-//Refer to Project Plan for guidelines on what needs to be saved.
-void saveGame() {
+void mouseReleased() {
+  draggingVolume = false;
 }
 
-void loadGame() {
+float log10(float x) {
+  return log(x) / log(10);
 }
 
-void mouseClicked() {
-  mainMenu.mousePressed();
-  // Check if the mouse click is on the pause button
-  if (isMouseOverPauseButton()) {
-    isPaused = !isPaused;
-  } else if (isMouseOverHelpButton()) {
-    isHelpVisible = !isHelpVisible;  // Toggle the isHelpVisible variable
-  } else if (isMouseOverExitButton()) {
-    gameState = MENU;
-  } else if (isMouseOverMuteButton()) {
-    isMuted = !isMuted;
-  }
-}
 void keyPressed() {
   // Check if the "P" key is pressed
   if (key == 'p' || key == 'P') {
     isPaused = !isPaused;  // Toggle the isPaused variable
-  }
-  if (key == 'm' || key == 'M') {
-    isMuted = !isMuted;
   }
 
   //Within Build mode / inside shop
@@ -241,6 +252,16 @@ void keyPressed() {
     }   
   }
 }
+void drawSaveButton() {
+  // Draw the pause button at the top right corner
+  fill(200);
+  rect(width - 240, 10, 44, 20);
+  fill(0);
+  textAlign(CENTER, CENTER);
+  textSize(12);
+  text("Save", width - 220, 20);
+}
+
 
 void drawPauseButton() {
   // Draw the pause button at the top right corner
@@ -278,11 +299,6 @@ void drawHelpButton() {
   }
 }
 
-void drawMuteButton() {
-  // Draw the mute button with an image
-  image(muteImage, width - 220, 10, 30, 20);
-}
-
 boolean isMouseOverPauseButton() {
   // Check if the mouse is over the pause button
   return mouseX > width - 120 && mouseX < width - 80 && mouseY > 10 && mouseY < 30;
@@ -296,10 +312,6 @@ boolean isMouseOverHelpButton() {
 boolean isMouseOverExitButton() {
   // Check if the mouse is over the help button
   return mouseX > width - 180 && mouseX < width - 140 && mouseY > 10 && mouseY < 30;
-}
-
-boolean isMouseOverMuteButton() {
-  return mouseX > width - 100 && mouseX < width - 60 && mouseY > 10 && mouseY < 30;
 }
 
 void drawHelpContent() {
