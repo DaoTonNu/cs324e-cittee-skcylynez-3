@@ -7,6 +7,8 @@ import ddf.minim.ugens.*;
 // Cittee Skcylynez 3
 // Adam, Anjali, Dao, David, Saurelle
 
+//BACKUP TODO consideration: maybe implement a PrettyCursor with animation hierarchy if we can't get people and cars working
+
 interface MenuCallback {
   void onGameStart();
 }
@@ -38,6 +40,7 @@ int tempType;
 int buildingSelected;
 boolean canPlaceBuildingHere;
 
+float tempCost;
 float userMoney;
 
 Table buildingInfo;
@@ -96,10 +99,11 @@ void setup() {
   mousePos  = new PVector();
 
   buildingSelected = 2;
+  userMoney = 500000; //TODO: choose a good default amount?
 
   theCity = new City(cellSizeX, cellSizeY, building_images, building_sizes);
   theShop = new Shop(buildingInfo); //TODO implement
-  shopButton = new Button(50, 60, 60, 30, "Shop");
+  shopButton = new Button(50, 60, 60, 30, "Shop (S)");
 }
 
 void draw() {
@@ -125,6 +129,7 @@ void draw() {
       //Tax generation: just mult by household? and there has to be at least 1 office per n-ppl
       if (shopOpen) { //and nominal not yet initialized for this build
         theShop.display();
+
         //TODO: mod for buildings in shop
         canPlaceBuildingHere = theCity.checkForRoom(int(mouseCell.x), int(mouseCell.y), buildingSelected);
         if (!canPlaceBuildingHere) {
@@ -137,12 +142,35 @@ void draw() {
           noTint();
         }
 
-        //TODO: Place into shop stuff
-        if (!isMouseOverPauseButton() && !isMouseOverHelpButton() && !isMouseOverExitButton())
-          if (mousePressed && canPlaceBuildingHere) {
-            theCity.placeUserBuilding(int(mouseCell.x), int(mouseCell.y), buildingSelected);
-          }
 
+        if (!theShop.choosing) {
+
+          //TODO: Place into shop stuff
+          if (theShop.makePurchase(userMoney)<0) {
+            push();
+            fill(255);
+            rect(width/2, 0, 100, 20);
+            fill(255,0,0);
+            textAlign(LEFT, TOP);
+            text("Insufficent Funds", width/2, 10);
+            pop();
+          } else {
+            if (!isMouseOverPauseButton() && !isMouseOverHelpButton() && !isMouseOverExitButton()) {
+              if (mousePressed && canPlaceBuildingHere) {
+                theCity.placeUserBuilding(int(mouseCell.x), int(mouseCell.y), buildingSelected);
+                userMoney = theShop.makePurchase(userMoney);
+              }
+            }
+          }
+        } else {
+          push();
+          fill(255);
+          rect(30, height-200, 80, 50);
+          fill(0);
+          textAlign(LEFT, TOP);
+          text("Press B to \n open/close \n choice buttons", 30, height-190);
+          pop();
+        }
         //FIXME: nominal overlap not allowed, but non-nominal still is
         //FIXME: comb thru implementation, seems to not all work
 
@@ -250,14 +278,15 @@ void keyPressed() {
   // Check if the "P" key is pressed
   if (key == 'p' || key == 'P') {
     isPaused = !isPaused;  // Toggle the isPaused variable
-  }
-  if (key == 'm' || key == 'M') {
+  } else if (key == 'm' || key == 'M') {
     isMuted = !isMuted;  // Toggle the isPaused variable
     if (isMuted) {
       gameMusic.setGain(20 * log10(0));
     } else {
       gameMusic.setGain(20 * log10(volume));
     }
+  } else if (key == 'b' || key == 'B') {
+    theShop.choosing = !theShop.choosing;
   }
 
   //Within Build mode / inside shop

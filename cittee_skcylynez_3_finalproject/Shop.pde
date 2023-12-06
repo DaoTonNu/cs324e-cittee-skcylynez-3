@@ -7,6 +7,10 @@ class Shop {
   ArrayList<Float> costs;
   ArrayList<Character> hotkeys;
 
+  ArrayList<Button> choiceButtons;
+  //building or choosing mode
+  boolean choosing;
+
   int curARind;
   int curType;
   String curName;
@@ -22,10 +26,22 @@ class Shop {
     sizes = new ArrayList<PVector>();
     costs = new ArrayList<Float>();
     hotkeys = new ArrayList<Character>();
+    choiceButtons = new ArrayList<Button>();
+
+    choosing = true;
+
+    int n = 0;
 
     for (TableRow r : buildingInfo.rows()) {
       numTypes.add(r.getInt("Number"));
+
       names.add(r.getString("Name"));
+
+      if (n>1) {
+        choiceButtons.add(new Button(40, 40+n*40, 100, 20, r.getString("Name") + " (" + r.getString("Hotkey") + ")" ));
+      }
+      n++;
+
       sizes.add(new PVector(r.getInt("Width"), r.getInt("Height")));
       costs.add(r.getFloat("Cost"));
       hotkeys.add(r.getString("Hotkey").charAt(0));
@@ -60,9 +76,19 @@ class Shop {
 
   //Function will return the money left
   float makePurchase(float userMoney) {
-    return 0.0; //TODO Fix
+    println("before purchase: " + userMoney);
+    if (userMoney > curCost) {
+      return userMoney-curCost;
+    } else { //Cannot purchase
+      return -1; //TODO Fix
+    }
   }
 
   void display() {
+    if (choosing) {
+      for (Button B : choiceButtons) {
+        B.display();
+      }
+    }
   }
 }
