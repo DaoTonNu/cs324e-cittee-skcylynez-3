@@ -1,7 +1,8 @@
+//Dao
 class Shop {
   //Shop variables:
   //Building nums, name, width, height, cost
-  ArrayList<Integer> numTypes;
+  ArrayList<Integer> typeNums;
   ArrayList<String> names;
   ArrayList<PVector> sizes;
   ArrayList<Float> costs;
@@ -21,7 +22,7 @@ class Shop {
   String[] tester;
 
   Shop(Table buildingInfo) {
-    numTypes = new ArrayList<Integer>();
+    typeNums = new ArrayList<Integer>();
     names = new ArrayList<String>();
     sizes = new ArrayList<PVector>();
     costs = new ArrayList<Float>();
@@ -33,7 +34,7 @@ class Shop {
     int n = 0;
 
     for (TableRow r : buildingInfo.rows()) {
-      numTypes.add(r.getInt("Number"));
+      typeNums.add(r.getInt("Number"));
 
       names.add(r.getString("Name"));
 
@@ -46,14 +47,16 @@ class Shop {
       costs.add(r.getFloat("Cost"));
       hotkeys.add(r.getString("Hotkey").charAt(0));
     }
-    println(numTypes);
+
+    //DEBUG STATEMENTS: Can be left for info tho
+    println(typeNums);
     println(names);
     println(sizes);
     println(costs);
     println(hotkeys);
 
     curARind = 2; //default
-    curType = numTypes.get(curARind);
+    curType = typeNums.get(curARind);
     curName = names.get(curARind);
     curSize = sizes.get(curARind);
     curCost = costs.get(curARind);
@@ -61,7 +64,7 @@ class Shop {
 
   int returnBuildingType(char k) {
     if (hotkeys.contains(k)) {
-      return numTypes.get(hotkeys.indexOf(k));
+      return typeNums.get(hotkeys.indexOf(k));
     }
     return -1;
   }
@@ -70,9 +73,9 @@ class Shop {
     println(hotkeys); //Debugging Statement
 
     if (hotkeys.contains(k)) {
-      println(k); //Debugging Statement
+      //println(k); //Debugging Statement
       curARind = hotkeys.indexOf(k);
-      curType = numTypes.get(curARind);
+      curType = typeNums.get(curARind);
       curName = names.get(curARind);
       curSize = sizes.get(curARind);
       curCost = costs.get(curARind);
@@ -81,7 +84,6 @@ class Shop {
 
   //Function will return the money left
   float makePurchase(float userMoney) {
-    println("before purchase: " + userMoney);
     if (curType > 1 && userMoney > curCost) {
       return userMoney-curCost;
     } else { //Cannot purchase

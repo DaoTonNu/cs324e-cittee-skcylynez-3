@@ -70,7 +70,6 @@ void setup() {
   gameState = MENU; //Starts with the main menu
   mainMenu = new MainMenu(this);
   buildingInfo = loadTable("BuildingTypes.csv", "header");
-  initializeAssets(); //Calls to initialize game assets
 
   //Sets the callback for the main menu
   mainMenu.setMenuCallback(new MenuCallback() {
@@ -100,10 +99,12 @@ void setup() {
 
   buildingSelected = 2;
   userMoney = 500000; //TODO: choose a good default amount?
+  println("Start Money: $" + userMoney);
 
-  theCity = new City(cellSizeX, cellSizeY, building_images, building_sizes);
   theShop = new Shop(buildingInfo); //TODO implement
   shopButton = new Button(50, 60, 60, 30, "Shop (S)");
+  initializeAssets(); //Calls to initialize game asset
+  theCity = new City(cellSizeX, cellSizeY, building_images, building_sizes);
 }
 
 void draw() {
@@ -162,6 +163,7 @@ void draw() {
               if (mousePressed && canPlaceBuildingHere) {
                 theCity.placeUserBuilding(int(mouseCell.x), int(mouseCell.y), buildingSelected);
                 userMoney = theShop.makePurchase(userMoney);
+                println("after purchase: " + userMoney); //Debugging statement
               }
             }
           }
@@ -267,6 +269,13 @@ void mouseClicked() {
   if (shopButton.isMouseOver()) {
     shopOpen = true;
   }
+  if (shopOpen) {
+    for (Button b : theShop.choiceButtons) {
+      if (b.isMouseOver()){
+        //theShop.
+      }
+    }
+  }
 }
 
 void mouseReleased() {
@@ -300,7 +309,7 @@ void keyPressed() {
   if (shopOpen) {
     theShop.display();
     tempType = theShop.returnBuildingType(key);
-    if (tempType>1 && tempType<5) { //FIXME: currently breaks for type >=5, we also need to ensure sheet and city match up
+    if (tempType>1) { //&& tempType<5) { //FIXME: currently breaks for type >=5, we also need to ensure sheet and city match up
       theShop.chooseBuilding(key);
       buildingSelected = tempType;
     }
@@ -392,21 +401,18 @@ void initializeAssets() {
   //4 is the "nominal" coordinates of a post office
   //5 is the "nominal" coordinates of an office building
   //6 is the "nominal" coordinates of a stadium
-  building_images = new PImage[10];
-  building_images[2] = loadImage("Road.png");
-  building_images[3] = loadImage("House.png");
-  building_images[4] = loadImage("PostOffice.png");
+  int numChoices = theShop.names.size();
 
-  building_sizes = new PVector[10];
-  for (int i = 1; i<building_sizes.length; i++) {
-    building_sizes[i] = new PVector();
+  building_sizes = new PVector[numChoices];
+  for (int i = 2; i < numChoices; i++) {
+    building_sizes[i] = theShop.sizes.get(i);
   }
-  building_sizes[2].x = 1;
-  building_sizes[2].y = 1;
-  building_sizes[3].x = 2;
-  building_sizes[3].y = 2;
-  building_sizes[4].x = 3;
-  building_sizes[4].y = 2;
+
+  building_images = new PImage[numChoices];
+  for (int i = 2; i < numChoices; i++) {
+    building_images[i] = loadImage(theShop.names.get(i) + ".png");
+    building_images[i].resize(int(building_sizes[i].x*cellSizeX), int(building_sizes[i].y*cellSizeY));
+  }
 }
 
 void updateMouse() {
