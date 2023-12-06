@@ -1,0 +1,9 @@
+Number,Name,Width,Height,Cost
+0,Unoccupied,1,1,0
+1,Occupied,1,1,0
+2,Road,1,1,500
+3,House,1,1,362000
+4,PostOffice,3,2,1915596.11
+5,OfficeBuilding,2,2,200000
+6,Stadium,3,5,1802500000
+7,Courthouse,3,1,271170000

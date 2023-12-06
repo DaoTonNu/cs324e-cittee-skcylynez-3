@@ -39,10 +39,12 @@ boolean canPlaceBuildingHere;
 
 float userMoney;
 
+Table buildingInfo;
 PImage[] building_images; //Uses the same building ID's as the City class
 PVector[] building_sizes;
 
 City theCity;
+Shop theShop;
 boolean shopOpen = false;
 // We also need to keep track of tentative type while in shop?
 int buildingType = 0;
@@ -61,6 +63,7 @@ void setup() {
 
   gameState = MENU; //Starts with the main menu
   mainMenu = new MainMenu(this);
+  buildingInfo = loadTable("BuildingTypes.csv", "header");
   initializeAssets(); //Calls to initialize game assets
 
   //Sets the callback for the main menu
@@ -68,7 +71,8 @@ void setup() {
     public void onGameStart() {
       startGame();
     }
-  });
+  }
+  );
 
   // Music
   minim = new Minim(this);
@@ -77,8 +81,6 @@ void setup() {
   gameMusic = minim.loadFile("firststeps.mp3", 2048);
 
   background(color(51, 63, 72 )); //The color.
-
-  initializeAssets();
 
   stroke(255);
   fill(255);
@@ -93,64 +95,100 @@ void setup() {
   buildingSelected = 2;
 
   theCity = new City(cellSizeX, cellSizeY, building_images, building_sizes);
+  theShop = new Shop(buildingInfo); //TODO implement
 }
 
 void draw() {
   switch (gameState) {
-    case MENU:
-      println("In Menu"); // Debugging statement
-      mainMenu.display();
-      break;
-    case GAME:
-      println("In Game!"); // Debugging statement
-      if (!isPaused) {
-        background(color(51, 63, 72 )); //The color.
+  case MENU:
+    println("In Menu"); // Debugging statement
+    mainMenu.display();
+    break;
+  case GAME:
+    println("In Game!"); // Debugging statement
+    if (!isPaused) {
+      background(color(51, 63, 72 )); //The color.
 
-        fill(255); // Resetting colors at the beginning of draw
-        stroke(255);
-        strokeWeight(1);
+      fill(255); // Resetting colors at the beginning of draw
+      stroke(255);
+      strokeWeight(1);
 
-        theCity.displayGridLines();
-        theCity.displayBuildings();
+      theCity.displayGridLines();
+      theCity.displayBuildings();
 
-        updateMouse();
+      updateMouse();
 
-        canPlaceBuildingHere = theCity.checkForRoom(int(mouseCell.x), int(mouseCell.y), buildingSelected);
-        if (!canPlaceBuildingHere) {
-          tint(200, 100, 100, 100);
-          image(building_images[2], mousePos.x, mousePos.y);
-          noTint();
-        } else {
-          tint(100, 200, 100, 100);
-          image(building_images[2], mousePos.x, mousePos.y);
-          noTint();
-        }
-
-        if (!isMouseOverPauseButton() && !isMouseOverHelpButton() && !isMouseOverExitButton())
-          if (mousePressed && canPlaceBuildingHere) {
-            theCity.placeUserBuilding(int(mouseCell.x), int(mouseCell.y), buildingSelected);
-          }
-
-        drawVolumeSlider(); //Draws the volume slider
+      //TODO: mod for buildings in shop
+      canPlaceBuildingHere = theCity.checkForRoom(int(mouseCell.x), int(mouseCell.y), buildingSelected);
+      if (!canPlaceBuildingHere) {
+        tint(200, 100, 100, 100);
+        image(building_images[2], mousePos.x, mousePos.y);
+        noTint();
       } else {
-        fill(0, 0, 0, 70);
-        rect(0, 0, width, height);
-        fill(255);
-        textSize(25);
-        text("Paused.", width/2, height/2);
+        tint(100, 200, 100, 100);
+        image(building_images[2], mousePos.x, mousePos.y);
+        noTint();
+      }
+      
+      //Tax generation: just mult by household? and there has to be at least 1 office per n-ppl
+      if (shopOpen) { //and nominal not yet initialized for this build
+        theShop.display();
+        
+        //MAY MOVE TO SHOP
+        //0 is unoccupied
+        //1 is cells that are occupied by a building but not the "nominal" coordinates of that building
+        //2 is a road
+        //3 is the "nominal" coordinates of a house
+        //4 is the "nominal" coordinates of a post office
+        //5 is the "nominal" coordinates of an office building
+        //6 is the "nominal" coordinates of a stadium
+        //7 is -----(continue as we add in more buildings)----------
+        //-add ability to rotate image within shop!
+        // ability to sell/delete? or demolition also costs >:)
+        //FIXME: debug the start game also clicking on the screen and adding a road
+        switch(key) {
+        case 'r':
+          buildingType = 2;
+          break;
+        case 'h':
+          buildingType = 3;
+          break;
+        case 'p':
+          buildingType = 4;
+          break;
+        case 'o':
+          buildingType = 5;
+          break;
+        case 't':
+          buildingType = 6;
+          break;
+          //Other building types or is America just sports and justice? :D
+          //case '':
+          //buildingType = 7;
+          //break;
+        }
       }
 
-      //Draws GUI components
-      drawPauseButton();
-      drawHelpButton();
-      drawExitButton();
-      drawSaveButton();
+      drawVolumeSlider(); //Draws the volume slider
+    } else {
+      fill(0, 0, 0, 70);
+      rect(0, 0, width, height);
+      fill(255);
+      textSize(25);
+      text("Paused.", width/2, height/2);
+    }
 
-      if (isHelpVisible) {
-        drawHelpContent();
-      }
+    //Draws GUI components
+    drawPauseButton();
+    drawHelpButton();
+    drawExitButton();
+    drawSaveButton();
 
-      break;
+    if (isHelpVisible) {
+      drawHelpContent();
+    }
+
+    break;
   }
 }
 
@@ -220,36 +258,8 @@ void keyPressed() {
   if (key == 's' || key == 'S') {
     shopOpen = !shopOpen;
   }
-  if (shopOpen) { //and nominal not yet initialized for this build
-    //0 is unoccupied
-    //1 is cells that are occupied by a building but not the "nominal" coordinates of that building
-    //2 is a road
-    //3 is the "nominal" coordinates of a house
-    //4 is the "nominal" coordinates of a post office
-    //5 is the "nominal" coordinates of an office building
-    //6 is the "nominal" coordinates of a stadium
-    //7 is -----(continue as we add in more buildings)----------
-    switch(key) {
-    case 'r':
-      buildingType = 2;
-      break;
-    case 'h':
-      buildingType = 3;
-      break;
-    case 'p':
-      buildingType = 4;
-      break;
-    case 'o':
-      buildingType = 5;
-      break;
-    case 't':
-      buildingType = 6;
-      break;
-      //Other building types or is America just sports and justice? :D
-      //case '':
-      //buildingType = 7;
-      //break;
-    }   
+  if(shopOpen){
+    theShop.display();
   }
 }
 void drawSaveButton() {
