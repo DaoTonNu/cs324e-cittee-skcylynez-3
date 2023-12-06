@@ -34,6 +34,7 @@ int cellSizeY;
 PVector mouseCell;
 PVector mousePos;
 
+int tempType;
 int buildingSelected;
 boolean canPlaceBuildingHere;
 
@@ -47,7 +48,7 @@ City theCity;
 Shop theShop;
 boolean shopOpen = false;
 // We also need to keep track of tentative type while in shop?
-int buildingType = 0;
+//int buildingType = 0;
 
 boolean isPaused = false;
 boolean isHelpVisible;
@@ -101,11 +102,11 @@ void setup() {
 void draw() {
   switch (gameState) {
   case MENU:
-    println("In Menu"); // Debugging statement
+    //println("In Menu"); // Debugging statement
     mainMenu.display();
     break;
   case GAME:
-    println("In Game!"); // Debugging statement
+    //println("In Game!"); // Debugging statement
     if (!isPaused) {
       background(color(51, 63, 72 )); //The color.
 
@@ -118,27 +119,27 @@ void draw() {
 
       updateMouse();
 
-      //TODO: mod for buildings in shop
-      canPlaceBuildingHere = theCity.checkForRoom(int(mouseCell.x), int(mouseCell.y), buildingSelected);
-      if (!canPlaceBuildingHere) {
-        tint(200, 100, 100, 100);
-        image(building_images[2], mousePos.x, mousePos.y);
-        noTint();
-      } else {
-        tint(100, 200, 100, 100);
-        image(building_images[2], mousePos.x, mousePos.y);
-        noTint();
-      }
-      
       //Tax generation: just mult by household? and there has to be at least 1 office per n-ppl
       if (shopOpen) { //and nominal not yet initialized for this build
         theShop.display();
+        //TODO: mod for buildings in shop
+        canPlaceBuildingHere = theCity.checkForRoom(int(mouseCell.x), int(mouseCell.y), buildingSelected);
+        if (!canPlaceBuildingHere) {
+          tint(200, 100, 100, 100);
+          image(building_images[buildingSelected], mousePos.x, mousePos.y);
+          noTint();
+        } else {
+          tint(100, 200, 100, 100);
+          image(building_images[buildingSelected], mousePos.x, mousePos.y);
+          noTint();
+        }
+
         //TODO: Place into shop stuff
         if (!isMouseOverPauseButton() && !isMouseOverHelpButton() && !isMouseOverExitButton())
           if (mousePressed && canPlaceBuildingHere) {
             theCity.placeUserBuilding(int(mouseCell.x), int(mouseCell.y), buildingSelected);
           }
-          
+
         //MAY MOVE TO SHOP
         //0 is unoccupied
         //1 is cells that are occupied by a building but not the "nominal" coordinates of that building
@@ -151,27 +152,6 @@ void draw() {
         //-add ability to rotate image within shop!
         // ability to sell/delete? or demolition also costs >:)
         //FIXME: debug the start game also clicking on the screen and adding a road
-        switch(key) {
-        case 'r':
-          buildingType = 2;
-          break;
-        case 'h':
-          buildingType = 3;
-          break;
-        case 'p':
-          buildingType = 4;
-          break;
-        case 'o':
-          buildingType = 5;
-          break;
-        case 't':
-          buildingType = 6;
-          break;
-          //Other building types or is America just sports and justice? :D
-          //case '':
-          //buildingType = 7;
-          //break;
-        }
       }
 
       drawVolumeSlider(); //Draws the volume slider
@@ -263,8 +243,13 @@ void keyPressed() {
   if (key == 's' || key == 'S') {
     shopOpen = !shopOpen;
   }
-  if(shopOpen){
+  if (shopOpen) {
     theShop.display();
+    tempType = theShop.chooseBuilding(key);
+    if (tempType>1 && tempType<5) { //FIXME: currently breaks for type >=5, we also need to ensure sheet and city match up
+      buildingSelected = tempType;
+    }
+    println(buildingSelected);// DEBUGGING statement
   }
 }
 void drawSaveButton() {
