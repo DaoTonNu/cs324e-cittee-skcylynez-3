@@ -100,6 +100,7 @@ class Shop {
       }
     }
   }
+
     Shop(JSONObject json) {
         // Initialize Shop properties from the json object
         this.curARind = json.getInt("curARind");

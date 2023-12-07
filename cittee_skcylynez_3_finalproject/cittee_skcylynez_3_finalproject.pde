@@ -9,6 +9,8 @@ import ddf.minim.ugens.*;
 
 //BACKUP TODO consideration: maybe implement a PrettyCursor with animation hierarchy if we can't get people and cars working
 
+//BACKUP TODO consideration: maybe implement a PrettyCursor with animation hierarchy if we can't get people and cars working
+
 interface MenuCallback {
   void onGameStart();
 }
@@ -133,7 +135,7 @@ void draw() {
       theCity.displayBuildings();
 
       updateMouse();
-      
+
       elapsedTime = millis() - startTime;
       displayTimer();
 
@@ -169,6 +171,7 @@ void draw() {
               pop();
             }
           } else {
+
             if (!isMouseOverPauseButton() && !isMouseOverHelpButton() && !isMouseOverExitButton() &&!isMouseOverSaveButton()) {
               if (mousePressed && canPlaceBuildingHere) {
                 theCity.placeUserBuilding(int(mouseCell.x), int(mouseCell.y), buildingSelected);
@@ -276,6 +279,20 @@ void mousePressed() {
 
     //Checks for game interactions only if it's not interacting with the UI
     if (!isMouseOverPauseButton() && !isMouseOverHelpButton() && !isMouseOverExitButton() && !isMouseOverSaveButton()) {
+    }
+  }
+}
+
+void mouseClicked() {
+  if (shopButton.isMouseOver()) {
+    shopOpen = true;
+    theShop.choosing=true;
+  } else if (shopOpen) {
+    for (Button b : theShop.choiceButtons) {
+      if (b.isMouseOver()) {
+        theShop.chooseBuilding(theShop.hotkeys.get(theShop.choiceButtons.indexOf(b)+2));
+        buildingSelected = theShop.returnBuildingType(theShop.curHotkey);
+      }
     }
   }
 }
