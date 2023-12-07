@@ -52,6 +52,7 @@ Table buildingInfo;
 PImage[] building_images; //Uses the same building ID's as the City class
 PVector[] building_sizes;
 
+Cursor mousey;
 City theCity;
 Shop theShop;
 boolean shopOpen = false;
@@ -115,6 +116,8 @@ void setup() {
   shopButton = new Button(50, 90, 60, 30, "Shop (S)");
   initializeAssets(); //Calls to initialize game asset
   theCity = new City(cellSizeX, cellSizeY, building_images, building_sizes, theShop);
+  
+  mousey = new Cursor();
 }
 
 void draw() {
@@ -225,7 +228,8 @@ void draw() {
       textSize(25);
       text("Paused.", width/2, height/2);
     }
-
+    
+    mousey.display();
 
     //Draws GUI components
     drawPauseButton();
@@ -263,6 +267,7 @@ void drawVolumeSlider() {
 }
 
 void mousePressed() {
+  mousey.screenPressed(true);
   //Checks to see if the mouse click is within the volume slider area
   if (mouseX >= sliderX && mouseX <= sliderX + sliderWidth && mouseY >= 5 && mouseY <= 35) {
     draggingVolume = true;
@@ -307,6 +312,7 @@ void mouseClicked() {
 }
 
 void mouseReleased() {
+  mousey.screenPressed(false);
   draggingVolume = false;
 }
 
