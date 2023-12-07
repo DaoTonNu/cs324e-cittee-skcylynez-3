@@ -1,0 +1,9 @@
+Name,Number,Width,Height,Cost,Hotkey
+Unoccupied,0,1,1,0,d
+Occupied,1,1,1,0,n
+Road,2,1,1,0.5,r
+House,3,2,2,362,h
+PostOffice,4,3,2,1915.6,f
+OfficeBuilding,5,3,3,200,o
+Stadium,6,6,8,1802500,t
+Courthouse,7,4,3,271170,c

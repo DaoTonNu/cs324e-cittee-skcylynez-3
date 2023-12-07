@@ -144,7 +144,7 @@ void draw() {
       if (shopOpen) { //and nominal not yet initialized for this build
         theShop.display();
         fill(255);
-        text("Current Cost: " + theShop.curCost,400,20);
+        text("Current Cost: " + theShop.curCost,350,10);
         
 
         //TODO: mod for buildings in shop
