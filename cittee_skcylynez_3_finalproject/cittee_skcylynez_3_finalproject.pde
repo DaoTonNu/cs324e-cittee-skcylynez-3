@@ -17,7 +17,8 @@ interface MenuCallback {
 final int MENU = 0, GAME = 1; // Add more states as needed
 int gameState;
 
-// Menu
+// Main Menu
+Load gameLoad;
 MainMenu mainMenu;
 
 // Minim library
@@ -70,10 +71,13 @@ void startGame() {
 
 void setup() {
   size(1000, 600);
+  buildingInfo = loadTable("BuildingTypes.csv", "header");
+  theShop = new Shop(buildingInfo);
+  //println(theShop.choiceButtons);
 
   gameState = MENU; //Starts with the main menu
-  mainMenu = new MainMenu(this);
-  buildingInfo = loadTable("BuildingTypes.csv", "header");
+  gameLoad = new Load();
+  mainMenu = new MainMenu(this, gameLoad);
 
   //Sets the callback for the main menu
   mainMenu.setMenuCallback(new MenuCallback() {
@@ -108,7 +112,6 @@ void setup() {
   userMoney = 99999999; //TODO: choose a good default amount?
   println("Start Money: $" + userMoney);
 
-  theShop = new Shop(buildingInfo); //TODO implement
   shopButton = new Button(50, 90, 60, 30, "Shop (S)");
   initializeAssets(); //Calls to initialize game asset
   theCity = new City(cellSizeX, cellSizeY, building_images, building_sizes, theShop);
@@ -140,6 +143,9 @@ void draw() {
       //Tax generation: just mult by household? and there has to be at least 1 office per n-ppl
       if (shopOpen) { //and nominal not yet initialized for this build
         theShop.display();
+        fill(255);
+        text("Current Cost: " + theShop.curCost,350,10);
+        
 
         //TODO: mod for buildings in shop
         canPlaceBuildingHere = theCity.checkForRoom(int(mouseCell.x), int(mouseCell.y), buildingSelected);
@@ -174,7 +180,7 @@ void draw() {
               if (mousePressed && canPlaceBuildingHere) {
                 theCity.placeUserBuilding(int(mouseCell.x), int(mouseCell.y), buildingSelected);
                 userMoney = theShop.makePurchase(userMoney);
-                //println("after purchase: " + userMoney); //Debugging statement
+                println("after purchase: " + userMoney); //Debugging statement
               }
             }
           }
@@ -290,6 +296,7 @@ void mouseClicked() {
     shopOpen = true;
     theShop.choosing=true;
   } else if (shopOpen) {
+    //println(theShop.choiceButtons);
     for (Button b : theShop.choiceButtons) {
       if (b.isMouseOver()) {
         theShop.chooseBuilding(theShop.hotkeys.get(theShop.choiceButtons.indexOf(b)+2));
@@ -465,9 +472,21 @@ void updateMouse() {
   mousePos.y = mouseCell.y * cellSizeY;
 }
 
+void displayTimer() {
+  int seconds = elapsedTime / 1000;
+  int minutes = seconds / 60;
+  seconds %= 60; // Remaining seconds after minutes
+
+  String timerText = nf(minutes, 2) + ":" + nf(seconds, 2); // Formats time as mm:ss
+  fill(255);
+  textSize(20);
+  text(timerText, 25, 20); // Display the timer at the top-left corner
+}
+
 void saveGame() {
   JSONObject saveData = new JSONObject();
 
+  // Saving game state variables
   saveData.setInt("elapsedTime", elapsedTime);
   saveData.setInt("gameState", gameState);
   saveData.setFloat("volume", volume);
@@ -486,52 +505,13 @@ void saveGame() {
   saveData.setBoolean("isHelpVisible", isHelpVisible);
   saveData.setBoolean("isMuted", isMuted);
 
+  // Saving city and shop data
   JSONObject cityData = theCity.toJSON();
   saveData.setJSONObject("city", cityData);
 
-  JSONObject shopData = theShop.toJSON();
-  saveData.setJSONObject("shop", shopData);
+  //JSONObject shopData = theShop.toJSON();
+  //saveData.setJSONObject("shop", shopData);
 
+  // Saving the JSON object to a file
   saveJSONObject(saveData, "savedgame.json");
-}
-
-void loadGame() {
-  JSONObject loadData = loadJSONObject("savedgame.json");
-
-  gameState = loadData.getInt("gameState");
-  volume = loadData.getFloat("volume");
-  sliderX = loadData.getFloat("sliderX");
-  sliderWidth = loadData.getFloat("sliderWidth");
-  draggingVolume = loadData.getBoolean("draggingVolume");
-  cellSizeX = loadData.getInt("cellSizeX");
-  cellSizeY = loadData.getInt("cellSizeY");
-  tempType = loadData.getInt("tempType");
-  buildingSelected = loadData.getInt("buildingSelected");
-  canPlaceBuildingHere = loadData.getBoolean("canPlaceBuildingHere");
-  tempCost = loadData.getFloat("tempCost");
-  userMoney = loadData.getFloat("userMoney");
-  shopOpen = loadData.getBoolean("shopOpen");
-  isPaused = loadData.getBoolean("isPaused");
-  isHelpVisible = loadData.getBoolean("isHelpVisible");
-  isMuted = loadData.getBoolean("isMuted");
-  elapsedTime = loadData.getInt("elapsedTime");
-
-  // Makes sure the current elapsedTime is correct
-  startTime = millis() - elapsedTime;
-
-  theCity.saveCity();
-
-  JSONObject shopData = loadData.getJSONObject("shop");
-  theShop = new Shop(shopData);
-}
-
-void displayTimer() {
-  int seconds = elapsedTime / 1000;
-  int minutes = seconds / 60;
-  seconds %= 60; // Remaining seconds after minutes
-
-  String timerText = nf(minutes, 2) + ":" + nf(seconds, 2); // Formats time as mm:ss
-  fill(255);
-  textSize(20);
-  text(timerText, 25, 20); // Display the timer at the top-left corner
 }
