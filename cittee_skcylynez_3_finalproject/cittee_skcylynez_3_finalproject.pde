@@ -111,7 +111,7 @@ void setup() {
   theShop = new Shop(buildingInfo); //TODO implement
   shopButton = new Button(50, 90, 60, 30, "Shop (S)");
   initializeAssets(); //Calls to initialize game asset
-  theCity = new City(cellSizeX, cellSizeY, building_images, building_sizes);
+  theCity = new City(cellSizeX, cellSizeY, building_images, building_sizes, theShop);
 }
 
 void draw() {
@@ -174,7 +174,7 @@ void draw() {
               if (mousePressed && canPlaceBuildingHere) {
                 theCity.placeUserBuilding(int(mouseCell.x), int(mouseCell.y), buildingSelected);
                 userMoney = theShop.makePurchase(userMoney);
-                println("after purchase: " + userMoney); //Debugging statement
+                //println("after purchase: " + userMoney); //Debugging statement
               }
             }
           }
