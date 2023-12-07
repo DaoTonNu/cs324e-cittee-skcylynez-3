@@ -35,6 +35,7 @@ class City {
   //  |  41  |  42  |  43  |  44  |
   //  |------|------|------|------|
 
+  //New City Constructor
   City(int cellSizeX, int cellSizeY, PImage[] building_images, PVector[] building_sizes, Shop theShop) {
     this.cellSizeX = cellSizeX;
     this.cellSizeY = cellSizeY;
@@ -50,16 +51,19 @@ class City {
     curSize = building_sizes[2];
     shop = theShop;
   }
-  City(int cellSizeX, int cellSizeY, PImage[] building_images, PVector[] building_sizes, int[][] Saved_City_Grid, Shop theShop) {
+  
+  //Load constructor
+  City(int cellSizeX, int cellSizeY, PImage[] building_images, PVector[] building_sizes, int[][] Saved_City_Grid, Shop theShop, ArrayList<Building> save_bldgs) {
     this.cellSizeX = cellSizeX;
     this.cellSizeY = cellSizeY;
     this.building_images = building_images;
     this.building_sizes = building_sizes;
     cityGrid = Saved_City_Grid;
-    buildings = new ArrayList<Building>(1);
+    buildings = save_bldgs;
     curSize = building_sizes[2];
     shop = theShop;
   }
+  
   void displayBuildings() {
     for (Building A_building : buildings) {
       A_building.display();

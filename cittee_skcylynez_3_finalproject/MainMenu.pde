@@ -32,16 +32,18 @@ class Cloud {
 class MainMenu {
     MenuCallback callback;
     Minim minim;
+    Load gameLoad;
     AudioPlayer menuMusic;
     PApplet parent;
     ArrayList<Cloud> clouds;
     boolean mouseWasPressed = false; //Tracks mouse button state
 
-    MainMenu(PApplet parent) {
+    MainMenu(PApplet parent, Load gameLoad) {
         this.parent = parent;
         this.minim = new Minim(parent);
         this.menuMusic = this.minim.loadFile("lake.mp3", 2048);
         this.menuMusic.loop();
+        this.gameLoad = gameLoad;
 
         //Clouds
         clouds = new ArrayList<Cloud>();
@@ -57,7 +59,7 @@ class MainMenu {
     void setMenuCallback(MenuCallback callback) {
         this.callback = callback;
     }
-    
+
     void restartMusic() {
         if (menuMusic.isPlaying()) {
             menuMusic.pause();
@@ -102,12 +104,13 @@ class MainMenu {
         parent.textSize(32);
         parent.fill(255);
         int textHeight = parent.height - 390;
-        parent.text("Continue Game", parent.width / 2 , textHeight);
+        parent.text("Continue Game", parent.width / 2, textHeight);
 
-        //Checks the mouse clicks
-        if (parent.mouseX > parent.width / 2 - 100 && parent.mouseX < parent.width / 2 + 100 && parent.mouseY > textHeight - 16 && parent.mouseY < textHeight + 16) {
+
+        // Check if 'Continue Game' is clicked
+        if (parent.mousePressed && parent.mouseX > parent.width / 2 - 100 && parent.mouseX < parent.width / 2 + 100 && parent.mouseY > textHeight - 16 && parent.mouseY < textHeight + 16) {
             if (mouseWasPressed) {
-                callback.onGameStart();
+                gameLoad.loadSavedGame(); // Call to load the saved game
                 stopMusic();
             }
         }
