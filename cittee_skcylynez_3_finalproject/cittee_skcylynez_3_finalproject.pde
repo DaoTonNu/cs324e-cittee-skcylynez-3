@@ -140,6 +140,9 @@ void draw() {
       //Tax generation: just mult by household? and there has to be at least 1 office per n-ppl
       if (shopOpen) { //and nominal not yet initialized for this build
         theShop.display();
+        fill(255);
+        text("Current Cost: " + theShop.curCost,400,20);
+        
 
         //TODO: mod for buildings in shop
         canPlaceBuildingHere = theCity.checkForRoom(int(mouseCell.x), int(mouseCell.y), buildingSelected);
