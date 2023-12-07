@@ -1,7 +1,9 @@
 //Dao, David
 class Building {
   //Fields:
-  PVector position; PVector size; int type;
+  PVector position;
+  PVector size;
+  int type;
   PVector[] building_sizes;
   PImage[] building_images;
 
@@ -16,12 +18,14 @@ class Building {
     this.building_sizes = building_sizes;
     type = buildingType;
   }
-  Building(int buildingType){
-    position.x = 0;
-    position.y = 0;
+  Building(int cellX, int cellY, int buildingType) {
+    position = new PVector();
+    size = new PVector();
+    position.x = cellX;
+    position.y = cellY;
     type = buildingType;
   }
-  Building(){
+  Building() {
     position.x = 0;
     position.y = 0;
     type = 0;
@@ -29,7 +33,20 @@ class Building {
 
   //Displays the building
   void display() {
-    image(building_images[type], position.x, position.y);
+    if (type>1 && position.x<width && position.x>0 && position.y>0 && position.y<height) {
+      image(building_images[type], position.x, position.y);
+    }
   }
-  
+
+  JSONObject toJSON() {
+    JSONObject buildingJson = new JSONObject();
+
+    buildingJson.setFloat("positionX", position.x);
+    buildingJson.setFloat("positionY", position.y);
+    buildingJson.setInt("type", type);
+    // Note: size, building_sizes, and building_images are not serialized
+    // as they are likely static and can be reconstructed during deserialization.
+
+    return buildingJson;
+  }
 }
