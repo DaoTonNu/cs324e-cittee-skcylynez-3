@@ -82,9 +82,9 @@ void setup() {
     }
   }
   );
-  
+
   // Initialize timer
-    startTime = millis();
+  startTime = millis();
 
   // Music
   minim = new Minim(this);
@@ -184,7 +184,8 @@ void draw() {
           rect(30, height-200, 80, 50);
           fill(0);
           textAlign(LEFT, TOP);
-          text("Press B to \n open/close \n choice buttons", 30, height-190);
+          textSize(15);
+          text("Press B to \n open/close \n choice buttons", 30, height-200);
           pop();
         }
         //FIXME: nominal overlap not allowed, but non-nominal still is
@@ -203,8 +204,12 @@ void draw() {
         // ability to sell/delete? or demolition also costs >:)
         //FIXME: debug the start game also clicking on the screen and adding a road
       }
+      push();
+      textSize(12);
+      displayMoney();
+      textSize(15);
       shopButton.display();
-
+      pop();
 
       drawVolumeSlider(); //Draws the volume slider
     } else {
@@ -215,7 +220,6 @@ void draw() {
       text("Paused.", width/2, height/2);
     }
 
-    displayMoney();
 
     //Draws GUI components
     drawPauseButton();
@@ -268,7 +272,7 @@ void mousePressed() {
       gameMusic.pause(); //Stops the in-game music
       gameMusic.rewind(); //Rewinds the in-game music to the start
       mainMenu.restartMusic();  //Restarts the main menu music
-    } else if (isMouseOverSaveButton()){
+    } else if (isMouseOverSaveButton()) {
       print("Game has been saved");
       saveGame();
     } else {
@@ -519,16 +523,15 @@ void loadGame() {
 
   JSONObject shopData = loadData.getJSONObject("shop");
   theShop = new Shop(shopData);
-
 }
 
 void displayTimer() {
-    int seconds = elapsedTime / 1000;
-    int minutes = seconds / 60;
-    seconds %= 60; // Remaining seconds after minutes
+  int seconds = elapsedTime / 1000;
+  int minutes = seconds / 60;
+  seconds %= 60; // Remaining seconds after minutes
 
-    String timerText = nf(minutes, 2) + ":" + nf(seconds, 2); // Formats time as mm:ss
-    fill(255);
-    textSize(20);
-    text(timerText, 25, 20); // Display the timer at the top-left corner
+  String timerText = nf(minutes, 2) + ":" + nf(seconds, 2); // Formats time as mm:ss
+  fill(255);
+  textSize(20);
+  text(timerText, 25, 20); // Display the timer at the top-left corner
 }
