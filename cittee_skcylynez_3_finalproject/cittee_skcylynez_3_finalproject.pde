@@ -24,6 +24,10 @@ MainMenu mainMenu;
 Minim minim;
 AudioPlayer gameMusic;
 
+// Global variables for timer
+int startTime;
+int elapsedTime; // in milliseconds
+
 //Volume slider variables
 float volume = 0.5; //Initial volume is at 50%
 float sliderX = 50;
@@ -78,6 +82,9 @@ void setup() {
     }
   }
   );
+  
+  // Initialize timer
+    startTime = millis();
 
   // Music
   minim = new Minim(this);
@@ -126,6 +133,9 @@ void draw() {
       theCity.displayBuildings();
 
       updateMouse();
+      
+      elapsedTime = millis() - startTime;
+      displayTimer();
 
       //Tax generation: just mult by household? and there has to be at least 1 office per n-ppl
       if (shopOpen) { //and nominal not yet initialized for this build
@@ -260,7 +270,6 @@ void mousePressed() {
     } else if (isMouseOverSaveButton()){
       print("Game has been saved");
       saveGame();
-      theCity.saveCity();
     } else {
       mainMenu.mousePressed();
     }
@@ -326,6 +335,7 @@ void keyPressed() {
     println(buildingSelected);// DEBUGGING statement
   }
 }
+
 void drawSaveButton() {
   // Draw the pause button at the top right corner
   fill(200);
@@ -476,11 +486,11 @@ void saveGame() {
   JSONObject shopData = theShop.toJSON();
   saveData.setJSONObject("shop", shopData);
 
-  saveJSONObject(saveData, "savegame.json");
+  saveJSONObject(saveData, "savedgame.json");
 }
 
 void loadGame() {
-  JSONObject loadData = loadJSONObject("savegame.json");
+  JSONObject loadData = loadJSONObject("savedgame.json");
 
   gameState = loadData.getInt("gameState");
   volume = loadData.getFloat("volume");
@@ -504,4 +514,15 @@ void loadGame() {
   JSONObject shopData = loadData.getJSONObject("shop");
   theShop = new Shop(shopData);
 
+}
+
+void displayTimer() {
+    int seconds = elapsedTime / 1000;
+    int minutes = seconds / 60;
+    seconds %= 60; // Remaining seconds after minutes
+
+    String timerText = nf(minutes, 2) + ":" + nf(seconds, 2); // Formats time as mm:ss
+    fill(255);
+    textSize(20);
+    text(timerText, 25, 20); // Display the timer at the top-left corner
 }
