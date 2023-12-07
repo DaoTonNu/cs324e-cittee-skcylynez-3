@@ -1,11 +1,13 @@
+// Cittee Skcylynez 3
+// Adam, Anjali, Dao, David, Saurelle
+
 import ddf.minim.analysis.*;
 import ddf.minim.effects.*;
 import ddf.minim.signals.*;
 import ddf.minim.spi.*;
 import ddf.minim.ugens.*;
 
-// Cittee Skcylynez 3
-// Adam, Anjali, Dao, David, Saurelle
+//BACKUP TODO consideration: maybe implement a PrettyCursor with animation hierarchy if we can't get people and cars working
 
 //BACKUP TODO consideration: maybe implement a PrettyCursor with animation hierarchy if we can't get people and cars working
 
@@ -23,6 +25,10 @@ MainMenu mainMenu;
 // Minim library
 Minim minim;
 AudioPlayer gameMusic;
+
+// Global variables for timer
+int startTime;
+int elapsedTime; // in milliseconds
 
 //Volume slider variables
 float volume = 0.5; //Initial volume is at 50%
@@ -78,6 +84,9 @@ void setup() {
     }
   }
   );
+  
+  // Initialize timer
+    startTime = millis();
 
   // Music
   minim = new Minim(this);
@@ -127,6 +136,9 @@ void draw() {
 
       updateMouse();
 
+      elapsedTime = millis() - startTime;
+      displayTimer();
+
       //Tax generation: just mult by household? and there has to be at least 1 office per n-ppl
       if (shopOpen) { //and nominal not yet initialized for this build
         theShop.display();
@@ -159,7 +171,8 @@ void draw() {
               pop();
             }
           } else {
-            if (!isMouseOverPauseButton() && !isMouseOverHelpButton() && !isMouseOverExitButton()) {
+
+            if (!isMouseOverPauseButton() && !isMouseOverHelpButton() && !isMouseOverExitButton() &&!isMouseOverSaveButton()) {
               if (mousePressed && canPlaceBuildingHere) {
                 theCity.placeUserBuilding(int(mouseCell.x), int(mouseCell.y), buildingSelected);
                 userMoney = theShop.makePurchase(userMoney);
@@ -257,12 +270,29 @@ void mousePressed() {
       gameMusic.pause(); //Stops the in-game music
       gameMusic.rewind(); //Rewinds the in-game music to the start
       mainMenu.restartMusic();  //Restarts the main menu music
+    } else if (isMouseOverSaveButton()){
+      print("Game has been saved");
+      saveGame();
     } else {
       mainMenu.mousePressed();
     }
 
     //Checks for game interactions only if it's not interacting with the UI
-    if (!isMouseOverPauseButton() && !isMouseOverHelpButton() && !isMouseOverExitButton()) {
+    if (!isMouseOverPauseButton() && !isMouseOverHelpButton() && !isMouseOverExitButton() && !isMouseOverSaveButton()) {
+    }
+  }
+}
+
+void mouseClicked() {
+  if (shopButton.isMouseOver()) {
+    shopOpen = true;
+    theShop.choosing=true;
+  } else if (shopOpen) {
+    for (Button b : theShop.choiceButtons) {
+      if (b.isMouseOver()) {
+        theShop.chooseBuilding(theShop.hotkeys.get(theShop.choiceButtons.indexOf(b)+2));
+        buildingSelected = theShop.returnBuildingType(theShop.curHotkey);
+      }
     }
   }
 }
@@ -322,6 +352,7 @@ void keyPressed() {
     println(buildingSelected);// DEBUGGING statement
   }
 }
+
 void drawSaveButton() {
   // Draw the pause button at the top right corner
   fill(200);
@@ -384,6 +415,11 @@ boolean isMouseOverExitButton() {
   return mouseX > width - 180 && mouseX < width - 140 && mouseY > 10 && mouseY < 30;
 }
 
+boolean isMouseOverSaveButton() {
+  // Check if the mouse is over the help button
+  return mouseX > width - 240 && mouseX < width - 200 && mouseY > 10 && mouseY < 30;
+}
+
 void drawHelpContent() {
   // Draw your help content here
   fill(255);
@@ -439,4 +475,76 @@ void updateMouse() {
   mouseCell.y = constrain(mouseCell.y, 0, (height / cellSizeY)-1);
   mousePos.x = mouseCell.x  * cellSizeX;
   mousePos.y = mouseCell.y * cellSizeY;
+}
+
+void saveGame() {
+  JSONObject saveData = new JSONObject();
+
+  saveData.setInt("elapsedTime", elapsedTime);
+  saveData.setInt("gameState", gameState);
+  saveData.setFloat("volume", volume);
+  saveData.setFloat("sliderX", sliderX);
+  saveData.setFloat("sliderWidth", sliderWidth);
+  saveData.setBoolean("draggingVolume", draggingVolume);
+  saveData.setInt("cellSizeX", cellSizeX);
+  saveData.setInt("cellSizeY", cellSizeY);
+  saveData.setInt("tempType", tempType);
+  saveData.setInt("buildingSelected", buildingSelected);
+  saveData.setBoolean("canPlaceBuildingHere", canPlaceBuildingHere);
+  saveData.setFloat("tempCost", tempCost);
+  saveData.setFloat("userMoney", userMoney);
+  saveData.setBoolean("shopOpen", shopOpen);
+  saveData.setBoolean("isPaused", isPaused);
+  saveData.setBoolean("isHelpVisible", isHelpVisible);
+  saveData.setBoolean("isMuted", isMuted);
+
+  JSONObject cityData = theCity.toJSON();
+  saveData.setJSONObject("city", cityData);
+
+  JSONObject shopData = theShop.toJSON();
+  saveData.setJSONObject("shop", shopData);
+
+  saveJSONObject(saveData, "savedgame.json");
+}
+
+void loadGame() {
+  JSONObject loadData = loadJSONObject("savedgame.json");
+
+  gameState = loadData.getInt("gameState");
+  volume = loadData.getFloat("volume");
+  sliderX = loadData.getFloat("sliderX");
+  sliderWidth = loadData.getFloat("sliderWidth");
+  draggingVolume = loadData.getBoolean("draggingVolume");
+  cellSizeX = loadData.getInt("cellSizeX");
+  cellSizeY = loadData.getInt("cellSizeY");
+  tempType = loadData.getInt("tempType");
+  buildingSelected = loadData.getInt("buildingSelected");
+  canPlaceBuildingHere = loadData.getBoolean("canPlaceBuildingHere");
+  tempCost = loadData.getFloat("tempCost");
+  userMoney = loadData.getFloat("userMoney");
+  shopOpen = loadData.getBoolean("shopOpen");
+  isPaused = loadData.getBoolean("isPaused");
+  isHelpVisible = loadData.getBoolean("isHelpVisible");
+  isMuted = loadData.getBoolean("isMuted");
+  elapsedTime = loadData.getInt("elapsedTime");
+
+  // Makes sure the current elapsedTime is correct
+  startTime = millis() - elapsedTime;
+
+  theCity.saveCity();
+
+  JSONObject shopData = loadData.getJSONObject("shop");
+  theShop = new Shop(shopData);
+
+}
+
+void displayTimer() {
+    int seconds = elapsedTime / 1000;
+    int minutes = seconds / 60;
+    seconds %= 60; // Remaining seconds after minutes
+
+    String timerText = nf(minutes, 2) + ":" + nf(seconds, 2); // Formats time as mm:ss
+    fill(255);
+    textSize(20);
+    text(timerText, 25, 20); // Display the timer at the top-left corner
 }

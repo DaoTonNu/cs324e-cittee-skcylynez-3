@@ -84,4 +84,37 @@ class City{
   void placeSpawnedBuilding(){
     
   }
+  
+  void saveCity() {
+      // Use the toJSON() method to get the JSON representation of the city
+      JSONObject cityJson = this.toJSON();
+
+      // Save the JSON object to a file
+      saveJSONObject(cityJson, "city_save.json");
+  }
+
+  JSONObject toJSON() {
+      JSONObject cityJson = new JSONObject();
+
+      // Serialize cityGrid
+      JSONArray cityGridArray = new JSONArray();
+      for (int[] row : cityGrid) {
+          JSONArray rowArray = new JSONArray();
+          for (int cell : row) {
+              rowArray.append(cell);
+          }
+          cityGridArray.append(rowArray);
+      }
+      cityJson.setJSONArray("cityGrid", cityGridArray);
+
+      // Serialize buildings
+      JSONArray buildingsArray = new JSONArray();
+      for (Building building : buildings) {
+          JSONObject buildingJson = building.toJSON(); // Ensure Building class has toJSON()
+          buildingsArray.append(buildingJson);
+      }
+      cityJson.setJSONArray("buildings", buildingsArray);
+
+      return cityJson;
+  }
 }
