@@ -463,6 +463,7 @@ void updateMouse() {
 void saveGame() {
   JSONObject saveData = new JSONObject();
 
+  saveData.setInt("elapsedTime", elapsedTime);
   saveData.setInt("gameState", gameState);
   saveData.setFloat("volume", volume);
   saveData.setFloat("sliderX", sliderX);
@@ -508,6 +509,10 @@ void loadGame() {
   isPaused = loadData.getBoolean("isPaused");
   isHelpVisible = loadData.getBoolean("isHelpVisible");
   isMuted = loadData.getBoolean("isMuted");
+  elapsedTime = loadData.getInt("elapsedTime");
+
+  // Makes sure the current elapsedTime is correct
+  startTime = millis() - elapsedTime;
 
   theCity.saveCity();
 
