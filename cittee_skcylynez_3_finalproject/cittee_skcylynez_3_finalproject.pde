@@ -28,6 +28,7 @@ AudioPlayer gameMusic;
 // Global variables for timer
 int startTime;
 int elapsedTime; // in milliseconds
+int dumbTaxTimeCtr; //strapped for time - dao.
 
 //Volume slider variables
 float volume = 0.5; //Initial volume is at 50%
@@ -51,6 +52,7 @@ float userMoney;
 Table buildingInfo;
 PImage[] building_images; //Uses the same building ID's as the City class
 PVector[] building_sizes;
+int numHouses;
 
 Cursor mousey;
 City theCity;
@@ -110,7 +112,7 @@ void setup() {
   mousePos  = new PVector();
 
   buildingSelected = 2;
-  userMoney = 99999999; //TODO: choose a good default amount?
+  userMoney = 30000;//99999999; //TODO: choose a good default amount?
   println("Start Money: $" + userMoney);
 
   shopButton = new Button(50, 90, 60, 30, "Shop (S)");
@@ -118,6 +120,8 @@ void setup() {
   theCity = new City(cellSizeX, cellSizeY, building_images, building_sizes, theShop);
   
   mousey = new Cursor();
+  numHouses = 1; //Start off w/ an "extra"
+  dumbTaxTimeCtr = 0;
 }
 
 void draw() {
@@ -183,7 +187,10 @@ void draw() {
               if (mousePressed && canPlaceBuildingHere) {
                 theCity.placeUserBuilding(int(mouseCell.x), int(mouseCell.y), buildingSelected);
                 userMoney = theShop.makePurchase(userMoney);
-                println("after purchase: " + userMoney); //Debugging statement
+                if (theShop.curName.equals("House")){
+                  numHouses++;
+                }
+                //println("after purchase: " + userMoney); //Debugging statement
               }
             }
           }
@@ -230,6 +237,10 @@ void draw() {
     }
     
     mousey.display();
+    dumbTaxTimeCtr++;
+    if (dumbTaxTimeCtr>100){
+      userMoney+= numHouses*10;
+    }
 
     //Draws GUI components
     drawPauseButton();
