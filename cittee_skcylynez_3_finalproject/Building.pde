@@ -32,4 +32,16 @@ class Building {
     image(building_images[type], position.x, position.y);
   }
   
+      JSONObject toJSON() {
+        JSONObject buildingJson = new JSONObject();
+
+        buildingJson.setFloat("positionX", position.x);
+        buildingJson.setFloat("positionY", position.y);
+        buildingJson.setInt("type", type);
+        // Note: size, building_sizes, and building_images are not serialized 
+        // as they are likely static and can be reconstructed during deserialization.
+
+        return buildingJson;
+    }
+  
 }

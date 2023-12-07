@@ -100,4 +100,45 @@ class Shop {
       }
     }
   }
+
+    Shop(JSONObject json) {
+        // Initialize Shop properties from the json object
+        this.curARind = json.getInt("curARind");
+        this.curType = json.getInt("curType");
+        this.curName = json.getString("curName");
+        this.curCost = json.getFloat("curCost");
+
+        // For curSize, assuming it's a PVector
+        JSONObject sizeJson = json.getJSONObject("curSize");
+        this.curSize = new PVector(sizeJson.getFloat("width"), sizeJson.getFloat("height"));
+
+        // For curHotkey
+        String hotkeyStr = json.getString("curHotkey");
+        this.curHotkey = hotkeyStr != null && !hotkeyStr.isEmpty() ? hotkeyStr.charAt(0) : ' ';
+
+        // Initialize other properties as needed
+    }
+
+    // Method to serialize the Shop object's state to JSON
+    public JSONObject toJSON() {
+        JSONObject shopJson = new JSONObject();
+
+        // Serialize Shop properties to JSON
+        shopJson.setInt("curARind", curARind);
+        shopJson.setInt("curType", curType);
+        shopJson.setString("curName", curName);
+        shopJson.setFloat("curCost", curCost);
+
+        // Serialize curSize
+        JSONObject sizeJson = new JSONObject();
+        sizeJson.setFloat("width", curSize.x);
+        sizeJson.setFloat("height", curSize.y);
+        shopJson.setJSONObject("curSize", sizeJson);
+
+        // Serialize curHotkey
+        shopJson.setString("curHotkey", String.valueOf(curHotkey));
+
+        // Return the JSON object
+        return shopJson;
+    }
 }
