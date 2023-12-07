@@ -105,7 +105,7 @@ void setup() {
   mousePos  = new PVector();
 
   buildingSelected = 2;
-  userMoney = 99999999; //TODO: choose a good default amount?
+  userMoney = 500000; //TODO: choose a good default amount?
   println("Start Money: $" + userMoney);
 
   theShop = new Shop(buildingInfo); //TODO implement
@@ -133,7 +133,7 @@ void draw() {
       theCity.displayBuildings();
 
       updateMouse();
-
+      
       elapsedTime = millis() - startTime;
       displayTimer();
 
@@ -169,7 +169,6 @@ void draw() {
               pop();
             }
           } else {
-
             if (!isMouseOverPauseButton() && !isMouseOverHelpButton() && !isMouseOverExitButton() &&!isMouseOverSaveButton()) {
               if (mousePressed && canPlaceBuildingHere) {
                 theCity.placeUserBuilding(int(mouseCell.x), int(mouseCell.y), buildingSelected);
