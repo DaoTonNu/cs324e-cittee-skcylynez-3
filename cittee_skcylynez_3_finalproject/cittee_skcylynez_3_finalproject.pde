@@ -238,7 +238,7 @@ void draw() {
     
     mousey.display();
     dumbTaxTimeCtr++;
-    if (dumbTaxTimeCtr>100){
+    if (dumbTaxTimeCtr>100 && userMoney < 99999999){
       userMoney+= numHouses*10;
     }
 

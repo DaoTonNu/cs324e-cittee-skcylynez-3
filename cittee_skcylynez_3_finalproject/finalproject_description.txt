@@ -1,0 +1,94 @@
+﻿Functionalities and implementations (Note that we might have this switched with the “What the included classes do” - They are generally similar but the below section goes into more detail.):
+
+
+
+
+Dao - Shop with hotkey and button toggle of building options, which also display the cost - You can test out different buildings and then make a purchase with enough money. Pressing M to mute the game. Also helped in adjustment of city grid occupation, as buildings should neither overlap nor exceed boundaries of the canvas, which meant I contributed to the tracking of building data including non-nominal occupied cells. Majestic Floating Cursor with particles that follow it for animation hierarchy.
+
+
+David - Cell framework, basic functionality of CIty and Building class
+
+
+Anjali - Button,  Load Class and Save City with Shop (With Adam), Main (With Adam), Button interactivity (With Adam), GUI (With Adam)
+
+
+Adam - Main Menu, Load Class and Save City with Shop (With Anjali), Main (With Anjali), Button interactivity (With Anjali), GUI (With Anjali), and Audio
+
+
+Saurelle - Graphics 
+
+
+
+
+What the included classes do:
+
+
+Dao -
+Shop Class: Loads in all of the building options, with each type number, name, size, cost, and hotkey, into array lists. It also holds button objects for the options and current option variables. Functions include returnBuildingType(): returning buildingType if valid hotkey given; chooseBuilding(): changes current building choice and its variables with valid hotkey; makePurchase(): deducts the cost of placed building from total user money and returns current user money; display(): displays all building options if the shop is open and in choosing mode.
+Cursor Class:        Creates a floating animated cursor when moving around the screen. Particles follow around the cursor for the cloud and move off it for the trail. When clicked, the hand clasps and cloud particles change color. 
+Additionally helped out with 
+Building Class: Adjusted display function to only display choice options and stay in bounds. Also adjusted constructors.
+City Class: Overlap logic, buildings cannot overlap, including both nominal cells and non-nominal cells
+Load: Helped debug loading cityGrid information from JSON arrays properly to continue the last game.
+Button Class: fixing w, h to make the functions of display and isMouseOver usable
+Sound: Mute hotkey b/c the music started driving me crazy
+Images: Made the code more modular and adaptable to additions in building types and 
+information. Also edited some pics.
+
+
+David -
+City Class: The purpose of the city class is to control all of the buildings, and the placing of those buildings. This keeps the main draw function a lot cleaner since there’s already a lot going on with menus / GUIs, saving, etc
+Building Class: The building class holds all of the information needed to have information about a building and display it. Building objects get created and added to the list held by the City object.
+
+
+Anjali -
+* GUI for when the game is in session: Using the button class, I created a pause button to pause the game and display a message, a help button that displays instructions, and an exit button that exits the game and returns to the main menu. I also created a hotkey to pause the game as well.
+* Button class: creates buttons upon specified positions, sizes, and labels. The button can be created either with specified dimensions (width and height) and a label or with an image. It has attributes for the button's position (x, y), dimensions (w, h), a label (for text buttons), and an image (for image buttons). The class provides a method display() to render and display the button based on its type. Additionally, there is a method isMouseOver() that determines whether the mouse cursor is positioned over the button. This method returns a boolean value, indicating whether the mouse coordinates are within the boundaries of the button.
+* Main file: I contributed to the function mousePressed() which conducts actions based on whether the mouse presses certain keys/buttons, keyPressed() for the pause hotkey, functions for drawing the buttons respectively, and boolean functions for checking if the mouse is over a button. The boolean functions also assist with ensuring that when the user presses a button, they don’t accidentally place a building on that position of the grid. I also helped contribute to the logic of connecting the game to the main menu in the draw function and connecting the save button to the save logic. 
+Adam - 
+* Load Class and Save: This serves the purpose of loading and restoring a saved game state. Within this class, there are two essential methods: "loadGame" and "loadSavedGame." In "loadGame," I use a JSON file named "savedgame.json" to fetch crucial game state variables, such as the current game state, volume settings, slider position, cell sizes, building selections, user money, and various boolean flags that control game features and UI elements. To ensure a seamless transition, I calculated the elapsed time based on the loaded data, effectively adjusting the game's start time. Additionally, this method takes care of loading data related to the in-game shop. The "loadSavedGame" method simplifies the process by merely calling "loadGame," initiating the loading of the saved game state. This class allows players to pick up their game right from where they left off.
+* Main Menu Class: Handles the main menu of a game. I've integrated audio playback, cloud animations, skyscraper rendering, and menu buttons in this class. To initiate the class, I pass references to the parent PApplet and a game-loading utility called "Load." Within the constructor, I initialize the audio system using the Minim library, load background music, and start looping it. I also create a dynamic number of clouds with random positions and speeds for a lively backdrop. The "display" method takes care of rendering the main menu. It draws a blue sky background and updates and displays the clouds' animation. Additionally, it renders skyscrapers with varying heights and window details. The "Start New Game" button is prominently displayed, and I've implemented functionality to detect mouse clicks on it, triggering the game start callback and stopping the menu music. I also included methods to restart and stop the menu music and a "close" method to release resources when necessary. The class also defines a "mousePressed" method to respond to mouse clicks on the "Start New Game" button. Overall, this class orchestrates the visual and audio elements of the main menu.
+* City Class: My contribution largely involved working on the JSON save file. I utilized the grid array and saved the positions of the building along with the shop in my save portion within the main class and the load class.
+* Main Class (With Cloud Class Built-In): My contributions to the Main Class include functions for updating the mouse position within a grid, displaying a timer in minutes and seconds format, saving game state variables to a JSON file, and drawing a volume slider with an interactive handle. The "updateMouse" function tracks the mouse cursor's position within a grid and ensures it stays within grid boundaries. "displayTimer" converts elapsed time into a readable format and displays it on the screen. "saveGame" creates a JSON object to store game state variables and saves them to a file. Lastly, "drawVolumeSlider" renders a volume control slider with an adjustable handle, allowing users to change the volume of in-game music.
+Saurelle -  
+For this project, I was in charge of finding, loading in, scaling, and editing all the images and sprites that will help build the city. I used images.google.com to find most of the images used in the game. Here are the sources:
+* Road: 
+https://www.vecteezy.com/vector-art/1844708-road-vector-design-illustration-isolated-on-white-background
+* House:
+https://www.deviantart.com/redknightx/art/Custom-Pokemon-style-house-sprite-sheet-418935167
+* Post Office:
+https://www.istockphoto.com/vector/top-view-of-the-city-gm951938618-259869052
+* OfficeBuilding:
+https://stock.adobe.com/search?k=%22sprite+sheets%22&asset_id=622668822
+* Stadium:
+SeatGeek Football Game Tickets
+* Courthouse:
+https://www.floridamemory.com/items/show/47104
+* Hand sprites:
+https://www.seekpng.com/ipng/u2q8e6a9e6t4q8t4_master-hand-sprite-sheet/
+To scale and edit the images to the appropriate size, background and colors,  I used  the website https://app.photoroom.com/create?gad_source=1&gclid=CjwKCAiA1MCrBhAoEiwAC2d64euSaffuN1crXqhR3pYwBBWqudQ_7GIVH1B-Odxsey1Ap3zehc4bdhoC5CIQAvD_BwE. 
+
+
+Unexpected challenges: 
+
+
+Dao - 
+A lot of debugging. Edge cases messed with me a lot especially on out of bounds or nullPointerExceptions; hopefully I caught them all. The overlapping logic took me a while too because I kept forgetting to change a small variable.
+
+
+David - 
+I didn’t realize how difficult it would be to get a mouse selection to snap to a grid cell. This seemed like a trivial problem, just bound it, divide, easy peasy right? Well as I found out, there were lots of weird problems with this. The most fun one to figure out was an out of bounds error when quickly moving the mouse off of the window, but not when slowly moving the mouse outside of the window. As it turns out, mousePos doesn’t get passed in to processing after it’s moved off of the window, except it sometimes does for 1 frame or so after the mouse just was on the window, meaning mousePos can be well past width or height. 
+
+
+Anjali -
+* One challenge encountered was trying to connect everyone’s code and all of the classes to relate with one another and function together.
+
+
+Adam - 
+* The hardest part was the load and save file as there was a large amount of data that needed to be implemented across most of the classes. It got extremely frustrating with the shop as Dao had to help me implement it over time with the JSON.
+* The volume slider tended to interact with the background game and that was an expected challenge.
+* Another challenge was connecting the buttons to other classes such as the in-game exit button to the main menu.
+
+
+Saurelle -  
+* The challenge that I had during this project was to find the right images that will truly match my requirements.
